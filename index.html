@@ -1,0 +1,4229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>OmniWebinar - Enterprise Live Webinar Studio & Funnel</title>
+  <!-- Google Fonts: Plus Jakarta Sans -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #08090f;
+      --surface: #10121d;
+      --surface-border: rgba(255, 255, 255, 0.08);
+      --surface-hover: rgba(255, 255, 255, 0.04);
+      --primary: #6366f1;
+      --primary-glow: rgba(99, 102, 241, 0.4);
+      --danger: #ef4444;
+      --danger-glow: rgba(239, 68, 68, 0.45);
+      --warning: #f59e0b;
+      --success: #10b981;
+      --text: #f8fafc;
+      --text-muted: #94a3b8;
+      --text-sub: #64748b;
+      --accent: #ec4899;
+      --radius-sm: 8px;
+      --radius-md: 14px;
+      --radius-lg: 20px;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      overflow-x: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Ambient lighting */
+    .ambient-sphere {
+      position: fixed;
+      border-radius: 50%;
+      filter: blur(140px);
+      pointer-events: none;
+      z-index: 0;
+      opacity: 0.35;
+      transition: all 1s ease;
+    }
+    .sphere-1 { top: -100px; left: -100px; width: 450px; height: 450px; background: #4f46e5; }
+    .sphere-2 { bottom: -150px; right: -100px; width: 500px; height: 500px; background: #9333ea; }
+    .sphere-panic { top: 30%; left: 35%; width: 550px; height: 550px; background: #dc2626; opacity: 0; transition: opacity 0.4s ease; }
+
+    /* Top Navigation Header */
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(13, 15, 26, 0.82);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      border-bottom: 1px solid var(--surface-border);
+      padding: 12px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 4px 30px rgba(0,0,0,0.4);
+    }
+
+    .brand-logo {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 19px;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+      text-decoration: none;
+      color: #fff;
+    }
+    .logo-badge {
+      width: 38px;
+      height: 38px;
+      border-radius: 10px;
+      background: linear-gradient(135deg, #6366f1, #a855f7);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 0 15px var(--primary-glow);
+    }
+
+    .nav-tabs {
+      display: flex;
+      background: rgba(255, 255, 255, 0.04);
+      padding: 4px;
+      border-radius: 12px;
+      border: 1px solid var(--surface-border);
+      gap: 4px;
+    }
+
+    .nav-tab-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      padding: 8px 18px;
+      border-radius: 8px;
+      font-size: 13.5px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .nav-tab-btn:hover {
+      color: #fff;
+      background: rgba(255, 255, 255, 0.05);
+    }
+    .nav-tab-btn.active {
+      background: var(--primary);
+      color: #fff;
+      box-shadow: 0 4px 15px var(--primary-glow);
+    }
+
+    .live-status-pill {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: rgba(16, 185, 129, 0.1);
+      border: 1px solid rgba(16, 185, 129, 0.25);
+      padding: 6px 14px;
+      border-radius: 100px;
+      font-size: 12.5px;
+      font-weight: 600;
+      color: #34d399;
+    }
+    .pulsing-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #10b981;
+      box-shadow: 0 0 10px #10b981;
+      animation: pulse 1.5s infinite;
+    }
+    @keyframes pulse {
+      0% { transform: scale(0.95); opacity: 0.7; }
+      50% { transform: scale(1.3); opacity: 1; box-shadow: 0 0 15px #10b981; }
+      100% { transform: scale(0.95); opacity: 0.7; }
+    }
+
+    /* Main Container */
+    main {
+      flex: 1;
+      position: relative;
+      z-index: 10;
+      max-width: 1720px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 20px 24px;
+    }
+
+    .view-panel {
+      display: none;
+      animation: fadeIn 0.3s ease forwards;
+    }
+    .view-panel.active {
+      display: block;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Glass Panels */
+    .glass-card {
+      background: var(--surface);
+      border: 1px solid var(--surface-border);
+      border-radius: var(--radius-md);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+    }
+
+    /* ==========================================================================
+       HOST STUDIO STYLES
+       ========================================================================== */
+    .studio-layout {
+      display: grid;
+      grid-template-columns: 1fr 380px;
+      gap: 20px;
+      height: calc(100vh - 120px);
+      min-height: 640px;
+    }
+
+    .video-viewport-wrapper {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      height: 100%;
+    }
+
+    .stage-container {
+      flex: 1;
+      position: relative;
+      background: #000;
+      border-radius: var(--radius-lg);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 20px 50px rgba(0,0,0,0.6);
+    }
+
+    #stageVideo {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: none;
+    }
+
+    /* Simulated Canvas for Whiteboard & Simulation */
+    #stageCanvas {
+      width: 100%;
+      height: 100%;
+      display: block;
+      cursor: crosshair;
+    }
+
+    .stage-overlay-top {
+      position: absolute;
+      top: 18px;
+      left: 20px;
+      right: 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      pointer-events: none;
+      z-index: 20;
+    }
+    .stage-overlay-top > * {
+      pointer-events: auto;
+    }
+
+    .room-badge {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(0, 0, 0, 0.7);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      padding: 6px 14px;
+      border-radius: 100px;
+      font-size: 13px;
+      font-weight: 600;
+    }
+    .room-badge .live-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #ef4444;
+      box-shadow: 0 0 10px #ef4444;
+    }
+
+    /* Panic Button Luxury Styling */
+    .panic-button {
+      background: linear-gradient(135deg, #dc2626 0%, #991b1b 100%);
+      color: #fff;
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      padding: 8px 18px;
+      border-radius: 100px;
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      box-shadow: 0 0 25px rgba(220, 38, 38, 0.5), inset 0 1px 1px rgba(255,255,255,0.4);
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .panic-button:hover {
+      transform: scale(1.04);
+      box-shadow: 0 0 35px rgba(220, 38, 38, 0.8), inset 0 1px 1px rgba(255,255,255,0.6);
+    }
+    .panic-button:active {
+      transform: scale(0.98);
+    }
+
+    /* Studio Bottom Controls */
+    .studio-control-dock {
+      background: rgba(18, 20, 33, 0.9);
+      backdrop-filter: blur(20px);
+      border: 1px solid var(--surface-border);
+      border-radius: var(--radius-md);
+      padding: 12px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .control-cluster {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .btn-circle {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.07);
+      border: 1px solid var(--surface-border);
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn-circle:hover {
+      background: rgba(255, 255, 255, 0.12);
+      transform: translateY(-2px);
+    }
+    .btn-circle.active {
+      background: var(--primary);
+      border-color: var(--primary);
+      box-shadow: 0 0 15px var(--primary-glow);
+    }
+    .btn-circle.off {
+      background: rgba(239, 68, 68, 0.2);
+      border-color: var(--danger);
+      color: var(--danger);
+    }
+
+    .vu-meter-bar {
+      width: 60px;
+      height: 6px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 10px;
+      overflow: hidden;
+      margin-left: 4px;
+    }
+    .vu-meter-fill {
+      height: 100%;
+      width: 30%;
+      background: linear-gradient(90deg, #10b981, #f59e0b, #ef4444);
+      border-radius: 10px;
+      transition: width 0.08s ease;
+    }
+
+    /* Sidebar Tabs & Modules */
+    .sidebar-panel {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      background: var(--surface);
+      border: 1px solid var(--surface-border);
+      border-radius: var(--radius-md);
+      overflow: hidden;
+    }
+
+    .sidebar-tabs-nav {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      background: rgba(0, 0, 0, 0.25);
+      border-bottom: 1px solid var(--surface-border);
+      padding: 6px;
+      gap: 4px;
+    }
+    .sidebar-tab-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      padding: 8px 4px;
+      font-size: 11.5px;
+      font-weight: 700;
+      text-transform: uppercase;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-align: center;
+    }
+    .sidebar-tab-btn.active {
+      background: rgba(255, 255, 255, 0.08);
+      color: #fff;
+    }
+
+    .sidebar-tab-content {
+      flex: 1;
+      overflow-y: auto;
+      padding: 16px;
+      display: none;
+    }
+    .sidebar-tab-content.active {
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Chat Styling */
+    .chat-messages-scroll {
+      flex: 1;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-bottom: 12px;
+      padding-right: 4px;
+    }
+    .chat-msg {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--surface-border);
+      border-radius: 10px;
+      padding: 10px 12px;
+      font-size: 13px;
+    }
+    .chat-msg .sender-line {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 4px;
+      font-size: 11.5px;
+      font-weight: 700;
+      color: var(--primary);
+    }
+    .chat-msg.host-msg {
+      border-color: rgba(99, 102, 241, 0.3);
+      background: rgba(99, 102, 241, 0.08);
+    }
+    .chat-msg.host-msg .sender-line {
+      color: #a5b4fc;
+    }
+    .chat-sticky {
+      background: linear-gradient(135deg, rgba(245, 158, 11, 0.15), rgba(234, 88, 12, 0.1));
+      border: 1px solid rgba(245, 158, 11, 0.35);
+      border-radius: 10px;
+      padding: 10px 14px;
+      margin-bottom: 12px;
+      font-size: 12.5px;
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+    }
+
+    .chat-input-bar {
+      display: flex;
+      gap: 8px;
+    }
+    .chat-input {
+      flex: 1;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--surface-border);
+      border-radius: 10px;
+      padding: 10px 14px;
+      color: #fff;
+      font-size: 13px;
+      outline: none;
+    }
+    .chat-input:focus {
+      border-color: var(--primary);
+    }
+    .btn-send {
+      background: var(--primary);
+      border: none;
+      color: #fff;
+      padding: 0 16px;
+      border-radius: 10px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    /* Timed Offers Module in Host */
+    .module-card {
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid var(--surface-border);
+      border-radius: var(--radius-sm);
+      padding: 14px;
+      margin-bottom: 14px;
+    }
+    .module-card h4 {
+      font-size: 14px;
+      margin-bottom: 8px;
+      font-weight: 700;
+    }
+    .input-field {
+      width: 100%;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid var(--surface-border);
+      border-radius: 8px;
+      padding: 8px 12px;
+      color: #fff;
+      font-size: 13px;
+      margin-bottom: 8px;
+      outline: none;
+    }
+    .input-field:focus {
+      border-color: var(--primary);
+    }
+    .btn-action-primary {
+      width: 100%;
+      background: linear-gradient(135deg, var(--primary), #4f46e5);
+      border: none;
+      color: #fff;
+      padding: 10px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      box-shadow: 0 4px 15px var(--primary-glow);
+      transition: all 0.2s;
+    }
+    .btn-action-primary:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 20px var(--primary-glow);
+    }
+
+    /* ==========================================================================
+       ATTENDEE LIVE ROOM STYLES
+       ========================================================================== */
+    .attendee-layout {
+      display: grid;
+      grid-template-columns: 1fr 360px;
+      gap: 20px;
+      height: calc(100vh - 120px);
+      min-height: 640px;
+      position: relative;
+    }
+
+    .attendee-stage-card {
+      position: relative;
+      background: #000;
+      border-radius: var(--radius-lg);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.8);
+    }
+
+    /* Reaction Floaters on Video */
+    .reaction-emitter-tray {
+      position: absolute;
+      bottom: 24px;
+      right: 24px;
+      display: flex;
+      gap: 8px;
+      z-index: 30;
+    }
+    .btn-react {
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      background: rgba(0, 0, 0, 0.6);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      font-size: 18px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: transform 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .btn-react:hover {
+      transform: scale(1.25);
+      background: rgba(255, 255, 255, 0.15);
+    }
+
+    .floating-emoji {
+      position: absolute;
+      bottom: 80px;
+      right: 40px;
+      font-size: 26px;
+      pointer-events: none;
+      animation: floatUp 2.4s ease-out forwards;
+      z-index: 28;
+    }
+    @keyframes floatUp {
+      0% { opacity: 1; transform: translateY(0) scale(0.6); }
+      50% { opacity: 0.9; transform: translateY(-140px) scale(1.2) rotate(10deg); }
+      100% { opacity: 0; transform: translateY(-300px) scale(1) rotate(-15deg); }
+    }
+
+    /* Floating Offer Banner on Attendee Screen */
+    .attendee-offer-banner {
+      position: absolute;
+      bottom: 30px;
+      left: 30px;
+      max-width: 420px;
+      width: 100%;
+      background: linear-gradient(135deg, rgba(24, 27, 46, 0.95), rgba(16, 18, 30, 0.98));
+      backdrop-filter: blur(25px);
+      border: 1px solid rgba(236, 72, 153, 0.4);
+      box-shadow: 0 15px 40px rgba(0, 0, 0, 0.8), 0 0 30px rgba(236, 72, 153, 0.25);
+      border-radius: var(--radius-md);
+      padding: 16px;
+      z-index: 35;
+      display: none;
+      animation: slideInLeft 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    @keyframes slideInLeft {
+      from { opacity: 0; transform: translateX(-40px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+    .offer-timer-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(239, 68, 68, 0.15);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      color: #f87171;
+      padding: 4px 10px;
+      border-radius: 100px;
+      font-size: 12px;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+    .offer-pricing-row {
+      display: flex;
+      align-items: baseline;
+      gap: 12px;
+      margin: 8px 0 12px;
+    }
+    .regular-price {
+      text-decoration: line-through;
+      color: var(--text-sub);
+      font-size: 15px;
+    }
+    .special-price {
+      font-size: 26px;
+      font-weight: 800;
+      color: #34d399;
+    }
+
+    /* Floating Poll Banner */
+    .attendee-poll-banner {
+      position: absolute;
+      top: 30px;
+      left: 30px;
+      max-width: 380px;
+      width: 100%;
+      background: rgba(18, 20, 32, 0.95);
+      backdrop-filter: blur(25px);
+      border: 1px solid var(--primary-glow);
+      box-shadow: 0 15px 40px rgba(0,0,0,0.7);
+      border-radius: var(--radius-md);
+      padding: 18px;
+      z-index: 35;
+      display: none;
+      animation: slideDown 0.4s ease;
+    }
+    @keyframes slideDown {
+      from { opacity: 0; transform: translateY(-30px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .poll-opt-btn {
+      width: 100%;
+      text-align: left;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--surface-border);
+      border-radius: 8px;
+      padding: 10px 14px;
+      color: #fff;
+      font-size: 13px;
+      font-weight: 600;
+      margin-top: 8px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .poll-opt-btn:hover {
+      background: rgba(99, 102, 241, 0.15);
+      border-color: var(--primary);
+    }
+
+    /* Panic Migration Overlay */
+    .panic-failover-overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(10, 11, 18, 0.96);
+      backdrop-filter: blur(30px);
+      z-index: 50;
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 30px;
+      animation: fadeIn 0.3s ease;
+    }
+    .panic-spinner-ring {
+      width: 70px;
+      height: 70px;
+      border: 4px solid rgba(239, 68, 68, 0.2);
+      border-top: 4px solid #ef4444;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin-bottom: 20px;
+    }
+    @keyframes spin {
+      100% { transform: rotate(360deg); }
+    }
+
+    /* ==========================================================================
+       REGISTRATION FUNNEL STYLES
+       ========================================================================== */
+    .funnel-hero {
+      max-width: 900px;
+      margin: 40px auto;
+      text-align: center;
+    }
+    .funnel-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(99, 102, 241, 0.12);
+      border: 1px solid rgba(99, 102, 241, 0.3);
+      color: #818cf8;
+      padding: 6px 16px;
+      border-radius: 100px;
+      font-size: 13px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 18px;
+    }
+    .funnel-title {
+      font-size: 48px;
+      font-weight: 800;
+      letter-spacing: -1.5px;
+      line-height: 1.15;
+      margin-bottom: 20px;
+      background: linear-gradient(135deg, #ffffff 40%, #94a3b8 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .funnel-subtitle {
+      font-size: 18px;
+      color: var(--text-muted);
+      line-height: 1.6;
+      margin-bottom: 35px;
+    }
+
+    .countdown-grid {
+      display: flex;
+      justify-content: center;
+      gap: 16px;
+      margin-bottom: 40px;
+    }
+    .countdown-box {
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid var(--surface-border);
+      border-radius: 14px;
+      padding: 16px 22px;
+      min-width: 95px;
+      text-align: center;
+    }
+    .countdown-val {
+      font-size: 34px;
+      font-weight: 800;
+      color: #fff;
+      line-height: 1;
+    }
+    .countdown-lbl {
+      font-size: 11.5px;
+      font-weight: 600;
+      color: var(--text-sub);
+      text-transform: uppercase;
+      margin-top: 6px;
+    }
+
+    .reg-form-card {
+      background: var(--surface);
+      border: 1px solid var(--surface-border);
+      border-radius: var(--radius-lg);
+      padding: 36px;
+      max-width: 520px;
+      margin: 0 auto;
+      box-shadow: 0 25px 60px rgba(0, 0, 0, 0.5);
+    }
+
+    /* ==========================================================================
+       REPLICA REPLAY & ANALYTICS
+       ========================================================================== */
+    .replay-layout {
+      display: grid;
+      grid-template-columns: 1fr 380px;
+      gap: 20px;
+    }
+    .scrubber-dock {
+      background: var(--surface);
+      border: 1px solid var(--surface-border);
+      border-radius: var(--radius-md);
+      padding: 16px 20px;
+      margin-top: 14px;
+    }
+    .timeline-track {
+      width: 100%;
+      height: 8px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+      position: relative;
+      cursor: pointer;
+      margin: 10px 0;
+    }
+    .timeline-progress {
+      height: 100%;
+      width: 45%;
+      background: var(--primary);
+      border-radius: 4px;
+      position: relative;
+    }
+    .timeline-marker {
+      position: absolute;
+      top: -4px;
+      width: 4px;
+      height: 16px;
+      background: #ec4899;
+      border-radius: 2px;
+    }
+
+    /* Modal Styling */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.8);
+      backdrop-filter: blur(15px);
+      z-index: 200;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .modal-box {
+      background: #141624;
+      border: 1px solid var(--surface-border);
+      border-radius: var(--radius-lg);
+      padding: 30px;
+      max-width: 480px;
+      width: 100%;
+      box-shadow: 0 25px 60px rgba(0,0,0,0.8);
+      animation: scaleIn 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    @keyframes scaleIn {
+      from { transform: scale(0.92); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+
+    /* --- Enterprise Q&A, Stage, Slides & Moderation Styling --- */
+    .live-answering-banner {
+      position: absolute;
+      top: 70px;
+      left: 20px;
+      right: 20px;
+      z-index: 30;
+      background: linear-gradient(135deg, rgba(99, 102, 241, 0.92), rgba(168, 85, 247, 0.92));
+      backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.25);
+      border-radius: var(--radius-md);
+      padding: 12px 18px;
+      display: none;
+      align-items: center;
+      justify-content: space-between;
+      color: #fff;
+      box-shadow: 0 10px 30px rgba(99, 102, 241, 0.5);
+      animation: slideDown 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    @keyframes slideDown {
+      from { transform: translateY(-20px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+
+    .qna-card {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--surface-border);
+      border-radius: 12px;
+      padding: 14px;
+      margin-bottom: 12px;
+      transition: all 0.2s ease;
+    }
+    .qna-card:hover {
+      background: rgba(255, 255, 255, 0.06);
+      border-color: rgba(99, 102, 241, 0.4);
+    }
+    .qna-card.answering {
+      border: 1.5px solid #a855f7;
+      background: rgba(168, 85, 247, 0.1);
+      box-shadow: 0 0 15px rgba(168, 85, 247, 0.2);
+    }
+
+    .btn-upvote {
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid var(--surface-border);
+      color: var(--text);
+      padding: 6px 12px;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s ease;
+    }
+    .btn-upvote:hover {
+      background: rgba(99, 102, 241, 0.2);
+      border-color: var(--primary);
+      color: #fff;
+    }
+
+    .btn-raise-hand {
+      position: absolute;
+      bottom: 20px;
+      right: 20px;
+      z-index: 25;
+      background: linear-gradient(135deg, #f59e0b, #d97706);
+      color: #fff;
+      border: none;
+      border-radius: 100px;
+      padding: 10px 20px;
+      font-size: 13.5px;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      box-shadow: 0 6px 20px rgba(245, 158, 11, 0.4);
+      transition: all 0.25s ease;
+    }
+    .btn-raise-hand:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(245, 158, 11, 0.6);
+    }
+    .btn-raise-hand.active {
+      background: linear-gradient(135deg, #10b981, #059669);
+      box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
+    }
+
+    /* Slide Deck Controller Dock */
+    .slide-dock {
+      background: rgba(16, 18, 29, 0.95);
+      border: 1px solid var(--surface-border);
+      border-radius: var(--radius-md);
+      padding: 10px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      margin-top: 10px;
+    }
+
+    /* Chat Moderation Actions Overlay */
+    .chat-msg {
+      position: relative;
+    }
+    .chat-msg-actions {
+      display: none;
+      position: absolute;
+      top: 6px;
+      right: 6px;
+      background: rgba(16, 18, 29, 0.9);
+      border: 1px solid var(--surface-border);
+      border-radius: 6px;
+      padding: 2px 6px;
+      gap: 4px;
+    }
+    .chat-msg:hover .chat-msg-actions {
+      display: flex;
+    }
+    .chat-act-btn {
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      font-size: 11px;
+      padding: 2px 4px;
+      border-radius: 4px;
+    }
+    .chat-act-btn:hover {
+      background: rgba(255, 255, 255, 0.1);
+      color: #fff;
+    }
+
+    /* Payment Tabs */
+    .payment-tab-row {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 14px;
+    }
+    .payment-tab-btn {
+      flex: 1;
+      padding: 8px;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid var(--surface-border);
+      border-radius: 8px;
+      color: var(--text-muted);
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      text-align: center;
+      transition: all 0.2s ease;
+    }
+    .payment-tab-btn.active {
+      background: rgba(99, 102, 241, 0.15);
+      border-color: var(--primary);
+      color: #fff;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Ambient Light Effects -->
+  <div class="ambient-sphere sphere-1"></div>
+  <div class="ambient-sphere sphere-2"></div>
+  <div class="ambient-sphere sphere-panic" id="panicGlow"></div>
+
+  <!-- Header & Navigation -->
+  <header>
+    <a href="#" class="brand-logo">
+      <div class="logo-badge">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <polygon points="23 7 16 12 23 17 23 7"></polygon>
+          <rect x="1" y="5" width="15" height="14" rx="2" ry="2"></rect>
+        </svg>
+      </div>
+      <span>OmniWebinar<span style="color:var(--primary); font-size:14px; margin-left:4px;">PRO</span></span>
+    </a>
+
+    <!-- View Switcher -->
+    <div class="nav-tabs">
+      <button class="nav-tab-btn active" onclick="switchView('hostStudio')">
+        <span>🎙️</span> Host Studio
+      </button>
+      <button class="nav-tab-btn" onclick="switchView('attendeeRoom')">
+        <span>👥</span> Attendee View
+      </button>
+      <button class="nav-tab-btn" onclick="switchView('funnelPage')">
+        <span>🚀</span> Registration Funnel
+      </button>
+      <button class="nav-tab-btn" onclick="switchView('emailFunnel')">
+        <span>📧</span> Email Marketing
+      </button>
+      <button class="nav-tab-btn" onclick="switchView('growthHub')">
+        <span>⚡</span> AI, WhatsApp & Growth
+      </button>
+      <button class="nav-tab-btn" onclick="switchView('replayAnalytics')">
+        <span>📼</span> Replica Replay & Stats
+      </button>
+    </div>
+
+    <!-- Live Status & Multi-Tab Sync Indicator -->
+    <div style="display:flex; align-items:center; gap:12px;">
+      <button class="nav-tab-btn" id="modeSwitcherBtn" onclick="toggleEvergreenMode()" style="background:rgba(99,102,241,0.12); border:1px solid rgba(99,102,241,0.3); color:#818cf8; font-size:12.5px;">
+        <span>🔄</span> <span id="modeSwitcherLabel">Mode: Live Broadcast</span>
+      </button>
+      <div class="live-status-pill" id="syncStatus">
+        <div class="pulsing-dot"></div>
+        <span id="syncText">Sync Active (WebSocket + Tab)</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Container -->
+  <main>
+
+    <!-- =======================================================================
+         VIEW 1: HOST STUDIO (LIVE BROADCAST STAGE)
+         ======================================================================= -->
+    <section id="hostStudio" class="view-panel active">
+      <div class="studio-layout">
+        
+        <!-- Left: Stage & Controls -->
+        <div class="video-viewport-wrapper">
+          
+          <div class="stage-container" id="hostStageContainer">
+            
+            <!-- Real Video Element (When Webcam On) -->
+            <video id="stageVideo" autoplay playsinline muted></video>
+            
+            <!-- Simulated Canvas (For Slides, Whiteboard & Audio Sync) -->
+            <canvas id="stageCanvas"></canvas>
+
+            <!-- Stage Top Overlay Bar -->
+            <div class="stage-overlay-top">
+              <div class="room-badge">
+                <span class="live-dot"></span>
+                <span id="hostRoomStatusText">LIVE: Room_Alpha_01</span>
+                <span style="color:var(--text-sub); margin: 0 4px;">|</span>
+                <span style="color:#34d399; font-weight:700;" id="hostAttendeeCount">1,482 Attendees</span>
+              </div>
+
+              <!-- THE PANIC BUTTON (WebinarJam's Star Feature) -->
+              <button class="panic-button" id="panicBtn" onclick="triggerPanicButton()" title="Click to instantly spin up emergency shadow room and migrate all attendees">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                  <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                </svg>
+                <span>PANIC BUTTON</span>
+              </button>
+            </div>
+
+          </div>
+
+          <!-- Bottom Control Bar -->
+          <div class="studio-control-dock">
+            
+            <div class="control-cluster">
+              <!-- Mic Toggle -->
+              <button class="btn-circle active" id="micBtn" onclick="toggleMic()" title="Toggle Microphone">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
+                  <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+                  <line x1="12" y1="19" x2="12" y2="23"></line>
+                  <line x1="8" y1="23" x2="16" y2="23"></line>
+                </svg>
+              </button>
+              
+              <!-- Real VU Meter Decibel Level -->
+              <div class="vu-meter-bar" title="Mic Audio Level">
+                <div class="vu-meter-fill" id="vuMeterFill"></div>
+              </div>
+
+              <!-- Camera Toggle -->
+              <button class="btn-circle active" id="camBtn" onclick="toggleCamera()" title="Toggle Webcam">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polygon points="23 7 16 12 23 17 23 7"></polygon>
+                  <rect x="1" y="5" width="15" height="14" rx="2" ry="2"></rect>
+                </svg>
+              </button>
+
+              <!-- Screen Share Toggle -->
+              <button class="btn-circle" id="screenBtn" onclick="toggleScreenShare()" title="Share Screen">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
+                  <line x1="8" y1="21" x2="16" y2="21"></line>
+                  <line x1="12" y1="17" x2="12" y2="21"></line>
+                </svg>
+              </button>
+
+              <!-- Annotation / Whiteboard Pen -->
+              <button class="btn-circle" id="drawBtn" onclick="toggleDrawing()" title="Whiteboard Pen">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M12 19l7-7 3 3-7 7-3-3z"></path>
+                  <path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"></path>
+                  <path d="M2 2l7.586 7.586"></path>
+                </svg>
+              </button>
+              <button class="nav-tab-btn" style="padding:6px 10px; font-size:12px;" onclick="clearWhiteboard()">Clear Draw</button>
+            </div>
+
+            <!-- Stage Layout Selector & Source Switcher -->
+            <div class="control-cluster">
+              <span style="font-size:12px; color:var(--text-sub); font-weight:600;">Layout:</span>
+              <button class="nav-tab-btn active" id="layoutSoloBtn" style="padding:6px 10px; font-size:12px;" onclick="changeLayout('solo')">Solo</button>
+              <button class="nav-tab-btn" id="layoutGridBtn" style="padding:6px 10px; font-size:12px;" onclick="changeLayout('grid')">Split 2-Up</button>
+              <button class="nav-tab-btn" id="layoutPipBtn" style="padding:6px 10px; font-size:12px;" onclick="changeLayout('pip')">PIP</button>
+            </div>
+
+            <!-- Source Switcher (Camera vs Slides vs Screen) -->
+            <div class="control-cluster">
+              <span style="font-size:12px; color:var(--text-sub); font-weight:600;">Source:</span>
+              <button class="nav-tab-btn active" id="btnSourceCam" style="padding:6px 10px; font-size:12px;" onclick="setStageSource('camera')">📹 Cam</button>
+              <button class="nav-tab-btn" id="btnSourceSlides" style="padding:6px 10px; font-size:12px;" onclick="setStageSource('slides')">📑 Slides</button>
+              <button class="nav-tab-btn" id="btnSourceScreen" style="padding:6px 10px; font-size:12px;" onclick="setStageSource('screen')">🖥️ Screen</button>
+            </div>
+
+            <!-- Raised Hands Badge -->
+            <button class="nav-tab-btn" id="btnRaisedHands" style="padding:6px 12px; font-size:12px; background:rgba(245,158,11,0.15); color:#f59e0b; border:1px solid rgba(245,158,11,0.3);" onclick="switchSidebarTab('handsTab')">
+              ✋ Hands (<span id="hostHandsBadge">0</span>)
+            </button>
+
+          </div>
+
+          <!-- Slide Presentation Controller Dock (Visible when in Slide Mode) -->
+          <div class="slide-dock" id="slideDock" style="display:none;">
+            <div style="display:flex; align-items:center; gap:8px;">
+              <button class="nav-tab-btn" style="padding:6px 12px; font-size:12px;" onclick="prevSlide()">⬅️ Prev</button>
+              <span style="font-size:13px; font-weight:700; color:var(--text);" id="slideCounterText">Slide 1 of 6</span>
+              <button class="nav-tab-btn" style="padding:6px 12px; font-size:12px;" onclick="nextSlide()">Next ➡️</button>
+            </div>
+            <div style="flex:1; margin:0 12px; font-size:12.5px; color:var(--text-muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
+              <strong style="color:var(--text);" id="slideTopicTitle">Slide 1: High-Ticket Automation Architecture</strong>
+              <span id="slideSpeakerNotes" style="margin-left:8px; font-size:11.5px; color:#a855f7;">(Notes: Emphasize 3-second recovery & automated sales)</span>
+            </div>
+            <button class="nav-tab-btn" style="padding:6px 10px; font-size:11px;" onclick="toggleWhiteboardOnSlide()">✏️ Annotate</button>
+          </div>
+
+        </div>
+
+        <!-- Right: Studio Sidebar (Chat, Q&A, Offers, Polls, Handouts, Hands) -->
+        <div class="sidebar-panel">
+          
+          <div class="sidebar-tabs-nav">
+            <button class="sidebar-tab-btn active" onclick="switchSidebarTab('chatTab')">Chat</button>
+            <button class="sidebar-tab-btn" id="hostQnaTabBtn" onclick="switchSidebarTab('qnaTab')">Q&A <span class="badge" id="hostQnaCountBadge" style="background:#6366f1; color:#fff; font-size:10px; padding:2px 6px; border-radius:10px;">2</span></button>
+            <button class="sidebar-tab-btn" onclick="switchSidebarTab('offersTab')">Offers</button>
+            <button class="sidebar-tab-btn" onclick="switchSidebarTab('pollsTab')">Polls</button>
+            <button class="sidebar-tab-btn" onclick="switchSidebarTab('handoutsTab')">Handouts</button>
+            <button class="sidebar-tab-btn" onclick="switchSidebarTab('handsTab')">✋ Hands (<span id="hostHandsTabBadge">0</span>)</button>
+          </div>
+
+          <!-- Tab 1: Live Chat & Moderation -->
+          <div class="sidebar-tab-content active" id="chatTab">
+            
+            <div class="chat-sticky" id="stickyBox">
+              <span style="font-size:16px;">📌</span>
+              <div>
+                <strong>Sticky Announcement:</strong> Welcome to the Masterclass! Use the Offers tab when the special deal opens.
+              </div>
+            </div>
+
+            <div class="chat-messages-scroll" id="hostChatBox">
+              <div class="chat-msg">
+                <div class="sender-line"><span>Rahul Verma</span><span>19:30</span></div>
+                <div>Super excited for this session! Audio is crystal clear.</div>
+              </div>
+              <div class="chat-msg">
+                <div class="sender-line"><span>Sarah Jenkins</span><span>19:31</span></div>
+                <div>Greetings from London! Will there be a replay available?</div>
+              </div>
+              <div class="chat-msg host-msg">
+                <div class="sender-line"><span>Host (You)</span><span>19:32</span></div>
+                <div>Yes Sarah! The complete Replica Replay will be sent automatically.</div>
+              </div>
+            </div>
+
+            <div class="chat-input-bar">
+              <input type="text" id="hostChatInput" class="chat-input" placeholder="Broadcast to attendees..." onkeydown="if(event.key==='Enter') sendHostChat()" />
+              <button class="btn-send" onclick="sendHostChat()">Send</button>
+            </div>
+
+          </div>
+
+          <!-- Tab 2: Live In-Webinar Offers (WebinarJam Timed Offers) -->
+          <div class="sidebar-tab-content" id="offersTab">
+            <div class="module-card">
+              <h4>🔥 Push Live Sales Offer</h4>
+              <p style="font-size:12px; color:var(--text-muted); margin-bottom:12px;">Display an interactive purchase card on all attendees' screens with live countdown.</p>
+              
+              <label style="font-size:11px; font-weight:700; color:var(--text-sub);">HEADLINE / PRODUCT</label>
+              <input type="text" id="offerTitleInput" class="input-field" value="Webinar Mastermind Accelerator" />
+              
+              <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
+                <div>
+                  <label style="font-size:11px; font-weight:700; color:var(--text-sub);">REGULAR PRICE</label>
+                  <input type="text" id="offerRegPrice" class="input-field" value="$997" />
+                </div>
+                <div>
+                  <label style="font-size:11px; font-weight:700; color:var(--text-sub);">SPECIAL DEAL</label>
+                  <input type="text" id="offerSalePrice" class="input-field" value="$197" />
+                </div>
+              </div>
+
+              <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
+                <div>
+                  <label style="font-size:11px; font-weight:700; color:var(--text-sub);">COUNTDOWN (SEC)</label>
+                  <input type="number" id="offerDuration" class="input-field" value="300" />
+                </div>
+                <div>
+                  <label style="font-size:11px; font-weight:700; color:var(--text-sub);">SCARCITY UNITS</label>
+                  <input type="number" id="offerUnits" class="input-field" value="7" />
+                </div>
+              </div>
+
+              <button class="btn-action-primary" onclick="pushOfferToAttendees()">
+                🚀 Launch Live Offer To All Attendees
+              </button>
+            </div>
+          </div>
+
+          <!-- Tab 3: Live Polls -->
+          <div class="sidebar-tab-content" id="pollsTab">
+            <div class="module-card">
+              <h4>📊 Launch Live Poll</h4>
+              <p style="font-size:12px; color:var(--text-muted); margin-bottom:12px;">Gather real-time attendee feedback with live animated bar charts.</p>
+
+              <label style="font-size:11px; font-weight:700; color:var(--text-sub);">POLL QUESTION</label>
+              <input type="text" id="pollQuestionInput" class="input-field" value="What is your biggest hurdle with live webinars?" />
+
+              <label style="font-size:11px; font-weight:700; color:var(--text-sub);">OPTION 1</label>
+              <input type="text" id="pollOpt1" class="input-field" value="Stream buffering & tech glitches" />
+
+              <label style="font-size:11px; font-weight:700; color:var(--text-sub);">OPTION 2</label>
+              <input type="text" id="pollOpt2" class="input-field" value="Low attendee attendance rate" />
+
+              <label style="font-size:11px; font-weight:700; color:var(--text-sub);">OPTION 3</label>
+              <input type="text" id="pollOpt3" class="input-field" value="Low offer sales conversion" />
+
+              <button class="btn-action-primary" onclick="launchLivePoll()">
+                📊 Broadcast Poll to Attendees
+              </button>
+            </div>
+          </div>
+
+          <!-- Tab 4: Handouts (Downloads) -->
+          <div class="sidebar-tab-content" id="handoutsTab">
+            <div class="module-card">
+              <h4>📎 Share Resource Handout</h4>
+              <p style="font-size:12px; color:var(--text-muted); margin-bottom:12px;">Push a cheat sheet or PDF directly onto attendee screens for 1-click download.</p>
+
+              <label style="font-size:11px; font-weight:700; color:var(--text-sub);">RESOURCE TITLE</label>
+              <input type="text" id="handoutTitle" class="input-field" value="The 7-Figure Webinar Blueprint.pdf" />
+
+              <label style="font-size:11px; font-weight:700; color:var(--text-sub);">FILE SIZE</label>
+              <input type="text" class="input-field" value="4.2 MB (Verified PDF)" readonly />
+
+              <button class="btn-action-primary" onclick="pushHandoutToAttendees()">
+                📥 Push Handout to Attendees
+              </button>
+            </div>
+          </div>
+
+          <!-- Tab 5: Host Q&A with Upvoting & Answer Live -->
+          <div class="sidebar-tab-content" id="qnaTab">
+            <div style="padding:14px; border-bottom:1px solid var(--surface-border); display:flex; justify-content:space-between; align-items:center;">
+              <span style="font-weight:700; font-size:13.5px;">Live Audience Q&A</span>
+              <div style="display:flex; gap:4px;">
+                <button class="nav-tab-btn active" style="padding:3px 8px; font-size:11px;" onclick="filterHostQnA('all')">All</button>
+                <button class="nav-tab-btn" style="padding:3px 8px; font-size:11px;" onclick="filterHostQnA('unanswered')">Open</button>
+              </div>
+            </div>
+            <div style="padding:10px 14px; background:rgba(255,255,255,0.02); border-bottom:1px solid var(--surface-border); display:flex; gap:8px;">
+              <input type="text" id="hostAddQuestionInput" class="input-field" placeholder="Add seed question..." style="padding:6px 10px; font-size:12px; margin:0;" onkeydown="if(event.key==='Enter') submitHostQuestion()" />
+              <button class="nav-tab-btn" style="padding:6px 12px; font-size:11px; background:var(--primary); color:#fff;" onclick="submitHostQuestion()">Add</button>
+            </div>
+            <div class="chat-messages-scroll" id="hostQnaList" style="padding:12px; max-height:460px;">
+              <!-- Rendered via JS -->
+            </div>
+          </div>
+
+          <!-- Tab 6: Raised Hands & Stage Management -->
+          <div class="sidebar-tab-content" id="handsTab">
+            <div style="padding:14px; border-bottom:1px solid var(--surface-border); display:flex; justify-content:space-between; align-items:center;">
+              <span style="font-weight:700; font-size:13.5px;">Raised Hands & Stage Manager</span>
+              <span class="live-status-pill" style="font-size:11px; padding:2px 8px;"><span id="hostHandsListCount">0</span> Waiting</span>
+            </div>
+            <div style="padding:14px;">
+              <div style="font-size:11.5px; font-weight:700; color:var(--text-sub); margin-bottom:8px; text-transform:uppercase;">Waiting to Speak</div>
+              <div id="hostRaisedHandsQueue" style="margin-bottom:16px;">
+                <div style="font-size:12px; color:var(--text-muted); padding:10px; text-align:center; border:1px dashed var(--surface-border); border-radius:8px;">
+                  No attendees currently raising their hand.
+                </div>
+              </div>
+
+              <div style="font-size:11.5px; font-weight:700; color:var(--text-sub); margin-bottom:8px; text-transform:uppercase;">Active Stage Speakers</div>
+              <div id="hostActiveStageSpeakers">
+                <div class="qna-card" style="display:flex; justify-content:space-between; align-items:center; padding:10px 12px; margin-bottom:8px;">
+                  <div>
+                    <div style="font-weight:700; font-size:13px; color:#fff;">Dr. Robert Vance (Host)</div>
+                    <div style="font-size:11px; color:#34d399;">Primary Broadcaster • HD 1080p</div>
+                  </div>
+                  <span style="background:rgba(16,185,129,0.15); color:#34d399; font-size:11px; font-weight:700; padding:2px 6px; border-radius:4px;">STAGE LEAD</span>
+                </div>
+                <div id="hostGuestSpeakersContainer"></div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+    </section>
+
+    <!-- =======================================================================
+         VIEW 2: ATTENDEE LIVE ROOM
+         ======================================================================= -->
+    <section id="attendeeRoom" class="view-panel">
+      <div class="attendee-layout">
+        
+        <!-- Left: Attendee Video Player -->
+        <div class="attendee-stage-card">
+          <canvas id="attendeeCanvas" style="width:100%; height:100%; display:block;"></canvas>
+
+          <!-- Top Status Pill -->
+          <div style="position:absolute; top:20px; left:20px; z-index:20; display:flex; gap:10px;">
+            <div class="room-badge">
+              <span class="live-dot"></span>
+              <span id="attendeeRoomId">CONNECTED: Primary Studio HD</span>
+            </div>
+            <div class="room-badge" style="background:rgba(16,185,129,0.15); color:#34d399;">
+              <span>Ultra-Low Latency (JamCast: 1.2s)</span>
+            </div>
+          </div>
+
+          <!-- EMOJI REACTIONS TRAY -->
+          <div class="reaction-emitter-tray">
+            <button class="btn-react" onclick="emitReaction('❤️')">❤️</button>
+            <button class="btn-react" onclick="emitReaction('🔥')">🔥</button>
+            <button class="btn-react" onclick="emitReaction('👏')">👏</button>
+            <button class="btn-react" onclick="emitReaction('💡')">💡</button>
+            <button class="btn-react" onclick="emitReaction('🚀')">🚀</button>
+          </div>
+
+          <!-- DYNAMIC FLOATING OFFER CARD (POPUP WHEN HOST PUSHES) -->
+          <div class="attendee-offer-banner" id="attendeeOfferCard">
+            <div class="offer-timer-badge">
+              <span>⏳ EXPIRES IN:</span>
+              <span id="offerTimeLeft">04:59</span>
+            </div>
+            <h3 id="attendeeOfferTitle" style="font-size:18px; font-weight:800; margin-bottom:4px;">Special Masterclass Deal</h3>
+            <p style="font-size:12.5px; color:var(--text-muted);">Exclusive live webinar discount. Limited stock available.</p>
+            
+            <div class="offer-pricing-row">
+              <span class="regular-price" id="attendeeRegPrice">$997</span>
+              <span class="special-price" id="attendeeSalePrice">$197</span>
+              <span style="font-size:12px; color:#f59e0b; font-weight:700; margin-left:auto;" id="attendeeUnitsLeft">Only 7 left!</span>
+            </div>
+
+            <button class="btn-action-primary" style="background:linear-gradient(135deg, #10b981, #059669); font-size:15px; padding:12px;" onclick="claimOfferModal()">
+              ⚡ Claim Special Offer Now
+            </button>
+          </div>
+
+          <!-- DYNAMIC FLOATING POLL CARD -->
+          <div class="attendee-poll-banner" id="attendeePollCard">
+            <div style="font-size:11.5px; font-weight:700; color:var(--primary); text-transform:uppercase; margin-bottom:6px;">LIVE POLL</div>
+            <h4 id="attendeePollQuestion" style="font-size:15px; margin-bottom:10px;">What is your biggest hurdle with webinars?</h4>
+            <div id="pollOptionsContainer"></div>
+          </div>
+
+          <!-- LIVE ANSWERING FLOATING BANNER (When Host Answers Question) -->
+          <div class="live-answering-banner" id="liveAnsweringBanner">
+            <div style="display:flex; align-items:center; gap:12px;">
+              <div style="background:rgba(255,255,255,0.2); border-radius:50%; width:36px; height:36px; display:flex; align-items:center; justify-content:center; font-size:18px;">🎙️</div>
+              <div>
+                <div style="font-size:11px; font-weight:800; text-transform:uppercase; letter-spacing:0.5px; opacity:0.85;">Host Answering Live</div>
+                <div style="font-weight:700; font-size:14.5px;" id="liveAnsweringText">"How do you configure automatic disaster recovery?"</div>
+                <div style="font-size:11px; opacity:0.75;" id="liveAnsweringAuthor">Asked by Priya Patel • 14 Upvotes</div>
+              </div>
+            </div>
+            <button onclick="dismissLiveAnswering()" style="background:rgba(0,0,0,0.2); border:none; border-radius:50%; width:28px; height:28px; color:#fff; font-size:14px; cursor:pointer;">✕</button>
+          </div>
+
+          <!-- FLOATING RAISE HAND BUTTON -->
+          <button class="btn-raise-hand" id="btnRaiseHand" onclick="toggleRaiseHand()">
+            <span>✋</span> <span id="raiseHandLabel">Raise Hand to Speak</span>
+          </button>
+
+          <!-- PANIC EMERGENCY AUTO-FAILOVER MODAL OVERLAY -->
+          <div class="panic-failover-overlay" id="panicFailoverOverlay">
+            <div class="panic-spinner-ring"></div>
+            <h2 style="font-size:24px; font-weight:800; color:#ef4444; margin-bottom:8px;">SEAMLESS FAILOVER TRIGGERED</h2>
+            <p style="color:var(--text-muted); max-width:480px; line-height:1.6; font-size:14px;">
+              WebinarJam Disaster Recovery Engine activated. Primary room has encountered a network glitch. Seamlessly migrating your stream to <strong>Shadow Backup Room 02</strong> with zero drop-off...
+            </p>
+            <div style="margin-top:20px; font-size:18px; font-weight:800; color:#fff;" id="failoverCountdown">Migrating in 3s...</div>
+          </div>
+
+        </div>
+
+        <!-- Right: Attendee Multi-Tab Sidebar (Chat, Q&A, Offers, Handouts) -->
+        <div class="sidebar-panel">
+          <div class="sidebar-tabs-nav" style="border-bottom:1px solid var(--surface-border); padding:4px;">
+            <button class="sidebar-tab-btn active" id="attTabChatBtn" onclick="switchAttendeeTab('attendeeChatTab')">💬 Chat</button>
+            <button class="sidebar-tab-btn" id="attTabQnaBtn" onclick="switchAttendeeTab('attendeeQnaTab')">🙋 Q&A (<span id="attendeeQnaBadge">2</span>)</button>
+            <button class="sidebar-tab-btn" id="attTabOffersBtn" onclick="switchAttendeeTab('attendeeOffersTab')">🔥 Deals</button>
+            <button class="sidebar-tab-btn" id="attTabHandoutsBtn" onclick="switchAttendeeTab('attendeeHandoutsTab')">📎 Handouts</button>
+          </div>
+
+          <!-- Tab 1: Attendee Live Chat -->
+          <div class="sidebar-tab-content active" id="attendeeChatTab" style="display:flex; flex-direction:column; height:100%;">
+            <div class="chat-messages-scroll" id="attendeeChatBox">
+              <div class="chat-msg">
+                <div class="sender-line"><span>Rahul Verma</span><span>19:30</span></div>
+                <div>Super excited for this session! Audio is crystal clear.</div>
+              </div>
+              <div class="chat-msg">
+                <div class="sender-line"><span>Sarah Jenkins</span><span>19:31</span></div>
+                <div>Greetings from London! Will there be a replay available?</div>
+              </div>
+              <div class="chat-msg host-msg">
+                <div class="sender-line"><span>Host (Verified)</span><span>19:32</span></div>
+                <div>Yes Sarah! The complete Replica Replay will be sent automatically.</div>
+              </div>
+            </div>
+
+            <div class="chat-input-bar">
+              <input type="text" id="attendeeChatInput" class="chat-input" placeholder="Join the discussion..." onkeydown="if(event.key==='Enter') sendAttendeeChat()" />
+              <button class="btn-send" onclick="sendAttendeeChat()">Send</button>
+            </div>
+          </div>
+
+          <!-- Tab 2: Attendee Q&A with Upvoting -->
+          <div class="sidebar-tab-content" id="attendeeQnaTab" style="display:none; flex-direction:column; height:100%;">
+            <div style="padding:12px; background:rgba(255,255,255,0.02); border-bottom:1px solid var(--surface-border);">
+              <div style="font-size:11px; font-weight:700; color:var(--text-sub); margin-bottom:6px; text-transform:uppercase;">Ask a question to Host</div>
+              <div style="display:flex; gap:8px;">
+                <input type="text" id="attendeeQuestionInput" class="input-field" placeholder="Type your question here..." style="padding:8px 12px; font-size:12.5px; margin:0;" onkeydown="if(event.key==='Enter') submitAttendeeQuestion()" />
+                <button class="nav-tab-btn" style="padding:8px 14px; font-size:12px; background:var(--primary); color:#fff;" onclick="submitAttendeeQuestion()">Ask</button>
+              </div>
+            </div>
+            <div class="chat-messages-scroll" id="attendeeQnaList" style="padding:12px; flex:1;">
+              <!-- Rendered via JS -->
+            </div>
+          </div>
+
+          <!-- Tab 3: Attendee Deals & Offers -->
+          <div class="sidebar-tab-content" id="attendeeOffersTab" style="display:none; padding:16px;">
+            <div class="module-card">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                <span class="live-status-pill" style="font-size:11px; padding:2px 8px;">ACTIVE WEBINAR DEAL</span>
+                <span style="color:#ef4444; font-size:12px; font-weight:700;">80% OFF</span>
+              </div>
+              <h4 style="font-size:16px; margin-bottom:6px;">AI Automation Agency Accelerator</h4>
+              <p style="font-size:12.5px; color:var(--text-muted); margin-bottom:12px;">Full enterprise license + 6 VIP masterclass bonuses.</p>
+              <div style="display:flex; align-items:baseline; gap:10px; margin-bottom:14px;">
+                <span style="font-size:24px; font-weight:800; color:#34d399;">$197</span>
+                <span style="text-decoration:line-through; color:var(--text-sub); font-size:14px;">$997</span>
+              </div>
+              <button class="btn-action-primary" style="background:#10b981;" onclick="claimOfferModal()">⚡ Claim Offer Now</button>
+            </div>
+          </div>
+
+          <!-- Tab 4: Attendee Handouts -->
+          <div class="sidebar-tab-content" id="attendeeHandoutsTab" style="display:none; padding:16px;">
+            <div class="module-card">
+              <h4>📎 Session Resources</h4>
+              <p style="font-size:12px; color:var(--text-muted); margin-bottom:12px;">Files and templates shared by the host during this masterclass.</p>
+              <div class="qna-card" style="display:flex; justify-content:space-between; align-items:center; padding:10px 12px;">
+                <div>
+                  <div style="font-weight:700; font-size:13px; color:#fff;">Webinar_Blueprint_2026.pdf</div>
+                  <div style="font-size:11px; color:var(--text-muted);">4.2 MB • Verified PDF</div>
+                </div>
+                <button class="nav-tab-btn" style="padding:6px 12px; font-size:11px; background:var(--primary); color:#fff;" onclick="alert('📥 Downloading The 7-Figure Webinar Blueprint.pdf...')">Download</button>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+    </section>
+
+    <!-- =======================================================================
+         VIEW 3: REGISTRATION FUNNEL BUILDER & PREVIEW
+         ======================================================================= -->
+    <section id="funnelPage" class="view-panel">
+      <div class="funnel-hero">
+        <div class="funnel-badge">🚀 Live Masterclass Registration</div>
+        <h1 class="funnel-title">Scale Your Live Webinars to 10,000+ Concurrent High-Converting Viewers</h1>
+        <p class="funnel-subtitle">Discover the secret architecture behind ultra-low latency streaming, automated replica replays, and zero-downtime panic recovery.</p>
+
+        <!-- Live Countdown Grid -->
+        <div class="countdown-grid">
+          <div class="countdown-box">
+            <div class="countdown-val">02</div>
+            <div class="countdown-lbl">Days</div>
+          </div>
+          <div class="countdown-box">
+            <div class="countdown-val">14</div>
+            <div class="countdown-lbl">Hours</div>
+          </div>
+          <div class="countdown-box">
+            <div class="countdown-val">38</div>
+            <div class="countdown-lbl">Minutes</div>
+          </div>
+          <div class="countdown-box">
+            <div class="countdown-val">45</div>
+            <div class="countdown-lbl">Seconds</div>
+          </div>
+        </div>
+
+        <!-- Registration Form Card -->
+        <div class="reg-form-card">
+          <h3 style="font-size:22px; font-weight:800; margin-bottom:8px;">Reserve Your Free Seat Now</h3>
+          <p style="font-size:13px; color:var(--text-muted); margin-bottom:24px;">Instant confirmation + SMS reminders sent automatically.</p>
+
+          <input type="text" id="regFullName" class="input-field" placeholder="Full Name (e.g. Alex Hunter)" value="Alex Hunter" style="padding:12px; margin-bottom:12px;" />
+          <input type="email" id="regEmailAddress" class="input-field" placeholder="Email Address (Work or Personal)" value="alex.hunter@example.com" style="padding:12px; margin-bottom:12px;" />
+          <input type="tel" id="regPhoneNum" class="input-field" placeholder="WhatsApp / Phone Number for SMS Alert" value="+1 (555) 234-5678" style="padding:12px; margin-bottom:20px;" />
+
+          <button class="btn-action-primary" id="btnClaimSeat" style="padding:14px; font-size:15px;" onclick="submitRegistration()">
+            Claim Free VIP Pass & Seat
+          </button>
+          
+          <div style="display:flex; align-items:center; justify-content:center; gap:8px; margin-top:16px; font-size:12px; color:var(--text-sub);">
+            <span>🔒 100% Privacy</span>
+            <span>•</span>
+            <span>⚡ Instant 1-Click Access</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- =======================================================================
+         VIEW 4: REPLICA REPLAY & ATTENDANCE ANALYTICS
+         ======================================================================= -->
+    <section id="replayAnalytics" class="view-panel">
+      <div style="margin-bottom:24px;">
+        <h2 style="font-size:24px; font-weight:800;">Replica Replay Engine & Post-Webinar Analytics</h2>
+        <p style="color:var(--text-muted); font-size:14px;">Review second-by-second attendee retention, offer conversion points, and simulated synchronized replays.</p>
+      </div>
+
+      <div class="replay-layout">
+        
+        <!-- Left: Scrubber & Telemetry Curve -->
+        <div>
+          <div class="glass-card" style="padding:20px; margin-bottom:20px;">
+            <h3 style="font-size:16px; margin-bottom:16px;">📈 Minute-by-Minute Attendee Retention Curve</h3>
+            
+            <!-- SVG Analytics Graph -->
+            <svg viewBox="0 0 800 240" style="width:100%; height:200px; overflow:visible;">
+              <defs>
+                <linearGradient id="retentionGlow" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stop-color="#6366f1" stop-opacity="0.5"/>
+                  <stop offset="100%" stop-color="#6366f1" stop-opacity="0.0"/>
+                </linearGradient>
+              </defs>
+              <!-- Grid lines -->
+              <line x1="40" y1="20" x2="780" y2="20" stroke="rgba(255,255,255,0.06)"/>
+              <line x1="40" y1="80" x2="780" y2="80" stroke="rgba(255,255,255,0.06)"/>
+              <line x1="40" y1="140" x2="780" y2="140" stroke="rgba(255,255,255,0.06)"/>
+              <line x1="40" y1="200" x2="780" y2="200" stroke="rgba(255,255,255,0.1)"/>
+              
+              <!-- Shaded Area -->
+              <path d="M 40 40 Q 200 45, 350 55 T 520 80 T 650 110 L 780 140 L 780 200 L 40 200 Z" fill="url(#retentionGlow)"/>
+              <!-- Curve Line -->
+              <path d="M 40 40 Q 200 45, 350 55 T 520 80 T 650 110 L 780 140" fill="none" stroke="#6366f1" stroke-width="3.5"/>
+              
+              <!-- Offer Drop Marker -->
+              <circle cx="520" cy="80" r="7" fill="#ec4899" stroke="#fff" stroke-width="2"/>
+              <text x="525" y="65" fill="#ec4899" font-size="12" font-weight="700">Offer Dropped (Min 45)</text>
+              
+              <!-- Axes labels -->
+              <text x="40" y="225" fill="#64748b" font-size="11">00:00 (Intro)</text>
+              <text x="350" y="225" fill="#64748b" font-size="11">30:00 (Core Value)</text>
+              <text x="520" y="225" fill="#64748b" font-size="11">45:00 (The Pitch)</text>
+              <text x="730" y="225" fill="#64748b" font-size="11">60:00 (Q&A)</text>
+            </svg>
+
+            <div style="display:grid; grid-template-columns:repeat(4, 1fr); gap:14px; margin-top:20px;">
+              <div style="background:rgba(255,255,255,0.03); padding:14px; border-radius:10px;">
+                <div style="font-size:12px; color:var(--text-sub);">Peak Attendees</div>
+                <div style="font-size:22px; font-weight:800; color:#fff;">1,482</div>
+              </div>
+              <div style="background:rgba(255,255,255,0.03); padding:14px; border-radius:10px;">
+                <div style="font-size:12px; color:var(--text-sub);">Avg. Watch Time</div>
+                <div style="font-size:22px; font-weight:800; color:#34d399;">52m 14s (87%)</div>
+              </div>
+              <div style="background:rgba(255,255,255,0.03); padding:14px; border-radius:10px;">
+                <div style="font-size:12px; color:var(--text-sub);">Offer Clicks</div>
+                <div style="font-size:22px; font-weight:800; color:#818cf8;">348 (23.4%)</div>
+              </div>
+              <div style="background:rgba(255,255,255,0.03); padding:14px; border-radius:10px;">
+                <div style="font-size:12px; color:var(--text-sub);">Revenue Closed</div>
+                <div style="font-size:22px; font-weight:800; color:#ec4899;">$18,912</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Video Scrubber with Timeline Events -->
+          <div class="scrubber-dock">
+            <div style="display:flex; justify-content:space-between; font-size:13px; font-weight:600;">
+              <span>📼 Replica Timeline Replay Simulation</span>
+              <span id="scrubberTime">45:12 / 60:00</span>
+            </div>
+            
+            <div class="timeline-track" id="timelineTrack" onclick="scrubTimeline(event)">
+              <div class="timeline-progress" id="timelineProgress" style="width:75%;"></div>
+              <div class="timeline-marker" style="left:75%;" title="Offer Triggered Here"></div>
+            </div>
+
+            <p style="font-size:12px; color:var(--text-sub);">
+              Every chat message, pinned poll, and offer is time-indexed to the millisecond. Drag the scrubber to test synchronized playback.
+            </p>
+          </div>
+        </div>
+
+        <!-- Right: Replay Event Timeline -->
+        <div class="glass-card" style="padding:20px; height:fit-content;">
+          <h3 style="font-size:16px; margin-bottom:14px;">⏱️ Synchronized Event Feed</h3>
+          <div style="display:flex; flex-direction:column; gap:12px; font-size:13px;">
+            <div style="display:flex; gap:10px; align-items:center;">
+              <span style="background:rgba(99,102,241,0.2); color:#818cf8; font-weight:700; padding:3px 8px; border-radius:6px; font-size:11px;">00:01</span>
+              <span>Webinar Session Initialized</span>
+            </div>
+            <div style="display:flex; gap:10px; align-items:center;">
+              <span style="background:rgba(16,185,129,0.2); color:#34d399; font-weight:700; padding:3px 8px; border-radius:6px; font-size:11px;">15:20</span>
+              <span>Poll Published: "Biggest hurdle?"</span>
+            </div>
+            <div style="display:flex; gap:10px; align-items:center;">
+              <span style="background:rgba(236,72,153,0.2); color:#ec4899; font-weight:700; padding:3px 8px; border-radius:6px; font-size:11px;">45:00</span>
+              <span>Timed Offer Dropped ($197)</span>
+            </div>
+            <div style="display:flex; gap:10px; align-items:center;">
+              <span style="background:rgba(245,158,11,0.2); color:#f59e0b; font-weight:700; padding:3px 8px; border-radius:6px; font-size:11px;">50:10</span>
+              <span>Handout Pushed: "The Blueprint PDF"</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- =======================================================================
+         VIEW 5: COMPLETE EMAIL MARKETING & AUTOMATION FUNNEL SUITE
+         ======================================================================= -->
+    <section id="emailFunnel" class="view-panel">
+      <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:24px; flex-wrap:wrap; gap:16px;">
+        <div>
+          <div style="display:inline-flex; align-items:center; gap:8px; background:rgba(99,102,241,0.12); border:1px solid rgba(99,102,241,0.3); color:#818cf8; padding:4px 12px; border-radius:100px; font-size:12px; font-weight:700; text-transform:uppercase; margin-bottom:8px;">
+            📧 WebinarJam Marketing Engine
+          </div>
+          <h2 style="font-size:26px; font-weight:800; letter-spacing:-0.5px;">Complete Email Marketing & Funnel Automation</h2>
+          <p style="color:var(--text-muted); font-size:14px; margin-top:4px;">
+            Pre-webinar reminder sequences, smart post-webinar segmentation, dynamic merge-tag templates, and instant broadcast mailer.
+          </p>
+        </div>
+
+        <div style="display:flex; gap:10px;">
+          <button class="nav-tab-btn active" style="padding:10px 16px; background:linear-gradient(135deg, #6366f1, #4f46e5); color:#fff;" onclick="switchEmailSubTab('emailSequences')">
+            🔀 Automation Sequences
+          </button>
+          <button class="nav-tab-btn" style="padding:10px 16px;" onclick="switchEmailSubTab('emailEditor')">
+            ✉️ Template Editor & Preview
+          </button>
+          <button class="nav-tab-btn" style="padding:10px 16px;" onclick="switchEmailSubTab('emailBroadcast')">
+            📢 Instant Broadcast Mailer
+          </button>
+          <button class="nav-tab-btn" style="padding:10px 16px;" onclick="switchEmailSubTab('emailAnalyticsTab')">
+            📊 Email Analytics
+          </button>
+        </div>
+      </div>
+
+      <!-- SUB-TAB 1: VISUAL AUTOMATION SEQUENCES (PRE & POST WEBINAR DRIP) -->
+      <div id="emailSequences" class="email-subtab-content active">
+        
+        <!-- Pre-Webinar Sequence -->
+        <div class="glass-card" style="padding:24px; margin-bottom:24px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+            <div>
+              <h3 style="font-size:18px; font-weight:800;">⏱️ Pre-Webinar Attendance Drive Sequence</h3>
+              <p style="font-size:13px; color:var(--text-muted);">Triggers automatically before the live room opens to maximize live show-up rates.</p>
+            </div>
+            <span style="background:rgba(16,185,129,0.15); color:#34d399; font-weight:700; font-size:12px; padding:4px 12px; border-radius:100px;">● 4 Automated Steps Active</span>
+          </div>
+
+          <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(240px, 1fr)); gap:16px;">
+            
+            <!-- Step 1 -->
+            <div style="background:rgba(255,255,255,0.03); border:1px solid var(--surface-border); border-radius:12px; padding:18px; position:relative;">
+              <div style="font-size:11px; font-weight:700; color:var(--primary); text-transform:uppercase; margin-bottom:6px;">TRIGGER: IMMEDIATE</div>
+              <h4 style="font-size:15px; font-weight:700; margin-bottom:8px;">1. Seat Confirmation & Calendar Invite</h4>
+              <p style="font-size:12.5px; color:var(--text-muted); line-height:1.5; margin-bottom:14px;">Contains attendee's unique 1-click token login link and .ics Google/Apple calendar attachment.</p>
+              <div style="display:flex; justify-content:space-between; font-size:11.5px; border-top:1px solid var(--surface-border); padding-top:10px; color:var(--text-sub);">
+                <span>Open Rate: <strong style="color:#34d399;">74.2%</strong></span>
+                <span>CTR: <strong style="color:#818cf8;">52.1%</strong></span>
+              </div>
+            </div>
+
+            <!-- Step 2 -->
+            <div style="background:rgba(255,255,255,0.03); border:1px solid var(--surface-border); border-radius:12px; padding:18px;">
+              <div style="font-size:11px; font-weight:700; color:#f59e0b; text-transform:uppercase; margin-bottom:6px;">TRIGGER: T - 24 HOURS</div>
+              <h4 style="font-size:15px; font-weight:700; margin-bottom:8px;">2. Workbook & Prep Checklist</h4>
+              <p style="font-size:12.5px; color:var(--text-muted); line-height:1.5; margin-bottom:14px;">Delivers preparatory exercises and builds excitement for key takeaways.</p>
+              <div style="display:flex; justify-content:space-between; font-size:11.5px; border-top:1px solid var(--surface-border); padding-top:10px; color:var(--text-sub);">
+                <span>Open Rate: <strong style="color:#34d399;">61.0%</strong></span>
+                <span>CTR: <strong style="color:#818cf8;">34.8%</strong></span>
+              </div>
+            </div>
+
+            <!-- Step 3 -->
+            <div style="background:rgba(255,255,255,0.03); border:1px solid var(--surface-border); border-radius:12px; padding:18px;">
+              <div style="font-size:11px; font-weight:700; color:#f59e0b; text-transform:uppercase; margin-bottom:6px;">TRIGGER: T - 1 HOUR</div>
+              <h4 style="font-size:15px; font-weight:700; margin-bottom:8px;">3. Final 60-Minute Countdown</h4>
+              <p style="font-size:12.5px; color:var(--text-muted); line-height:1.5; margin-bottom:14px;">Reminder to test speakers, close distracting tabs, and enter the waiting lounge early.</p>
+              <div style="display:flex; justify-content:space-between; font-size:11.5px; border-top:1px solid var(--surface-border); padding-top:10px; color:var(--text-sub);">
+                <span>Open Rate: <strong style="color:#34d399;">68.5%</strong></span>
+                <span>CTR: <strong style="color:#818cf8;">41.2%</strong></span>
+              </div>
+            </div>
+
+            <!-- Step 4 -->
+            <div style="background:rgba(239,68,68,0.08); border:1px solid rgba(239,68,68,0.3); border-radius:12px; padding:18px;">
+              <div style="font-size:11px; font-weight:700; color:#ef4444; text-transform:uppercase; margin-bottom:6px;">TRIGGER: T - 15 MINUTES (URGENT)</div>
+              <h4 style="font-size:15px; font-weight:700; margin-bottom:8px; color:#f87171;">4. Doors Open! We Are LIVE</h4>
+              <p style="font-size:12.5px; color:var(--text-muted); line-height:1.5; margin-bottom:14px;">High-urgency blast pushing attendees directly into the active WebRTC stream room.</p>
+              <div style="display:flex; justify-content:space-between; font-size:11.5px; border-top:1px solid rgba(239,68,68,0.2); padding-top:10px; color:var(--text-sub);">
+                <span>Open Rate: <strong style="color:#34d399;">82.1%</strong></span>
+                <span>CTR: <strong style="color:#818cf8;">64.8%</strong></span>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- Post-Webinar Smart Segmentation Flow -->
+        <div class="glass-card" style="padding:24px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+            <div>
+              <h3 style="font-size:18px; font-weight:800;">🎯 Post-Webinar Behavioral Segmentation (WebinarJam Feature)</h3>
+              <p style="font-size:13px; color:var(--text-muted);">
+                WebinarJam's highest ROI capability: automatically categorizes every registrant based on exact attendance telemetry and sends tailored messaging.
+              </p>
+            </div>
+            <span style="background:rgba(99,102,241,0.15); color:#818cf8; font-weight:700; font-size:12px; padding:4px 12px; border-radius:100px;">4 Dynamic Segments</span>
+          </div>
+
+          <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(260px, 1fr)); gap:18px;">
+            
+            <!-- Segment 1: Attended & Saw Offer -->
+            <div style="background:linear-gradient(135deg, rgba(16,185,129,0.08), rgba(5,150,105,0.02)); border:1px solid rgba(16,185,129,0.3); border-radius:12px; padding:18px;">
+              <div style="display:flex; align-items:center; gap:6px; margin-bottom:8px;">
+                <span style="font-size:16px;">🟢</span>
+                <span style="font-weight:800; font-size:13px; color:#34d399;">ATTENDED & SAW OFFER (480 Leads)</span>
+              </div>
+              <h4 style="font-size:15px; font-weight:700; margin-bottom:8px;">Urgency & Scarcity Closing Drip</h4>
+              <p style="font-size:12.5px; color:var(--text-muted); line-height:1.5; margin-bottom:14px;">
+                "Your $197 masterclass deal and fast-action bonuses expire tonight at midnight."
+              </p>
+              <div style="background:rgba(0,0,0,0.3); border-radius:8px; padding:10px; font-size:12px;">
+                <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
+                  <span style="color:var(--text-sub);">Conversion Rate:</span>
+                  <strong style="color:#34d399;">20.0% (96 Buyers)</strong>
+                </div>
+                <div style="display:flex; justify-content:space-between;">
+                  <span style="color:var(--text-sub);">Revenue Closed:</span>
+                  <strong style="color:#ec4899;">$18,912</strong>
+                </div>
+              </div>
+            </div>
+
+            <!-- Segment 2: Attended But Left Early -->
+            <div style="background:linear-gradient(135deg, rgba(245,158,11,0.08), rgba(217,119,6,0.02)); border:1px solid rgba(245,158,11,0.3); border-radius:12px; padding:18px;">
+              <div style="display:flex; align-items:center; gap:6px; margin-bottom:8px;">
+                <span style="font-size:16px;">🟡</span>
+                <span style="font-weight:800; font-size:13px; color:#f59e0b;">ATTENDED BUT LEFT EARLY (210 Leads)</span>
+              </div>
+              <h4 style="font-size:15px; font-weight:700; margin-bottom:8px;">Breakthrough Recap + Replay</h4>
+              <p style="font-size:12.5px; color:var(--text-muted); line-height:1.5; margin-bottom:14px;">
+                "Sorry you had to drop off early! Here's a 3-minute executive summary and the secret framework you missed."
+              </p>
+              <div style="background:rgba(0,0,0,0.3); border-radius:8px; padding:10px; font-size:12px;">
+                <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
+                  <span style="color:var(--text-sub);">Watched Replay:</span>
+                  <strong style="color:#818cf8;">58% (122 Leads)</strong>
+                </div>
+                <div style="display:flex; justify-content:space-between;">
+                  <span style="color:var(--text-sub);">Replay Conversions:</span>
+                  <strong style="color:#34d399;">12 Purchases ($2,364)</strong>
+                </div>
+              </div>
+            </div>
+
+            <!-- Segment 3: No-Shows (Missed Event) -->
+            <div style="background:linear-gradient(135deg, rgba(239,68,68,0.08), rgba(185,28,28,0.02)); border:1px solid rgba(239,68,68,0.3); border-radius:12px; padding:18px;">
+              <div style="display:flex; align-items:center; gap:6px; margin-bottom:8px;">
+                <span style="font-size:16px;">🔴</span>
+                <span style="font-weight:800; font-size:13px; color:#f87171;">REGISTERED NO-SHOWS (792 Leads)</span>
+              </div>
+              <h4 style="font-size:15px; font-weight:700; margin-bottom:8px;">24-Hour Replica Replay Access</h4>
+              <p style="font-size:12.5px; color:var(--text-muted); line-height:1.5; margin-bottom:14px;">
+                "We missed you today! The recording with live questions is up, but disappears in 24 hours."
+              </p>
+              <div style="background:rgba(0,0,0,0.3); border-radius:8px; padding:10px; font-size:12px;">
+                <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
+                  <span style="color:var(--text-sub);">Replay Show-Up:</span>
+                  <strong style="color:#818cf8;">44.2% (350 Leads)</strong>
+                </div>
+                <div style="display:flex; justify-content:space-between;">
+                  <span style="color:var(--text-sub);">Replay Conversions:</span>
+                  <strong style="color:#34d399;">24 Purchases ($4,728)</strong>
+                </div>
+              </div>
+            </div>
+
+            <!-- Segment 4: Buyers -->
+            <div style="background:linear-gradient(135deg, rgba(99,102,241,0.08), rgba(79,70,229,0.02)); border:1px solid rgba(99,102,241,0.3); border-radius:12px; padding:18px;">
+              <div style="display:flex; align-items:center; gap:6px; margin-bottom:8px;">
+                <span style="font-size:16px;">💎</span>
+                <span style="font-weight:800; font-size:13px; color:#818cf8;">CUSTOMERS / BUYERS (96 Clients)</span>
+              </div>
+              <h4 style="font-size:15px; font-weight:700; margin-bottom:8px;">Immediate Onboarding & Access</h4>
+              <p style="font-size:12.5px; color:var(--text-muted); line-height:1.5; margin-bottom:14px;">
+                Instant login credentials, receipt PDF, and invitation to the private VIP community.
+              </p>
+              <div style="background:rgba(0,0,0,0.3); border-radius:8px; padding:10px; font-size:12px;">
+                <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
+                  <span style="color:var(--text-sub);">Portal Logins:</span>
+                  <strong style="color:#34d399;">98% (94 Active)</strong>
+                </div>
+                <div style="display:flex; justify-content:space-between;">
+                  <span style="color:var(--text-sub);">Refund Rate:</span>
+                  <strong style="color:#10b981;">0.0%</strong>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+      </div>
+
+      <!-- SUB-TAB 2: INTERACTIVE TEMPLATE EDITOR & DYNAMIC PREVIEW -->
+      <div id="emailEditor" class="email-subtab-content" style="display:none;">
+        <div style="display:grid; grid-template-columns: 460px 1fr; gap:24px;">
+          
+          <!-- Editor Controls -->
+          <div class="glass-card" style="padding:22px;">
+            <h3 style="font-size:17px; font-weight:800; margin-bottom:16px;">📝 Dynamic Template Editor</h3>
+
+            <label style="font-size:11px; font-weight:700; color:var(--text-sub);">SELECT TEMPLATE TO EDIT</label>
+            <select id="emailTemplateSelect" class="input-field" onchange="loadSelectedEmailTemplate()">
+              <option value="CONFIRMATION">🎟️ 1. Instant Registration Confirmation</option>
+              <option value="REMINDER_15M">🚨 2. T-15 Minutes Urgent Starting Blast</option>
+              <option value="POST_ATTENDED">⏳ 3. Post-Webinar: Offer Expiring Tonight</option>
+              <option value="POST_NO_SHOW">📼 4. Post-Webinar: 24h Replica Replay (No-Shows)</option>
+            </select>
+
+            <label style="font-size:11px; font-weight:700; color:var(--text-sub); margin-top:8px;">EMAIL SUBJECT LINE</label>
+            <input type="text" id="emailSubjectInput" class="input-field" oninput="updateLiveEmailPreview()" value="Confirmed! Your VIP Seat for {WEBINAR_TITLE} is Locked In 🎟️" />
+
+            <label style="font-size:11px; font-weight:700; color:var(--text-sub); margin-top:8px;">PREVIEW TEXT / PRE-HEADER</label>
+            <input type="text" id="emailPreheaderInput" class="input-field" oninput="updateLiveEmailPreview()" value="Here is your 1-click access link for the live event..." />
+
+            <label style="font-size:11px; font-weight:700; color:var(--text-sub); margin-top:8px;">DYNAMIC MERGE TAGS (CLICK TO INSERT)</label>
+            <div style="display:flex; flex-wrap:wrap; gap:6px; margin:8px 0 16px;">
+              <span class="nav-tab-btn" style="padding:4px 8px; font-size:11px;" onclick="insertMergeTag('{FIRST_NAME}')">{FIRST_NAME}</span>
+              <span class="nav-tab-btn" style="padding:4px 8px; font-size:11px;" onclick="insertMergeTag('{WEBINAR_TITLE}')">{WEBINAR_TITLE}</span>
+              <span class="nav-tab-btn" style="padding:4px 8px; font-size:11px;" onclick="insertMergeTag('{UNIQUE_JOIN_LINK}')">{UNIQUE_JOIN_LINK}</span>
+              <span class="nav-tab-btn" style="padding:4px 8px; font-size:11px;" onclick="insertMergeTag('{DATE_TIME}')">{DATE_TIME}</span>
+              <span class="nav-tab-btn" style="padding:4px 8px; font-size:11px;" onclick="insertMergeTag('{REPLAY_LINK}')">{REPLAY_LINK}</span>
+              <span class="nav-tab-btn" style="padding:4px 8px; font-size:11px;" onclick="insertMergeTag('{OFFER_PRICE}')">{OFFER_PRICE}</span>
+            </div>
+
+            <label style="font-size:11px; font-weight:700; color:var(--text-sub);">CUSTOM MESSAGE PARAGRAPH</label>
+            <textarea id="emailBodyCustomText" class="input-field" style="height:100px; resize:vertical; font-size:12.5px; line-height:1.5;" oninput="updateLiveEmailPreview()">We have prepared an extraordinary presentation covering high-conversion funnel architecture and zero-downtime streaming.</textarea>
+
+            <div style="display:flex; gap:10px; margin-top:14px;">
+              <button class="btn-action-primary" style="flex:1;" onclick="sendTestEmailSimulation()">
+                📨 Send Test Email
+              </button>
+              <button class="nav-tab-btn" style="padding:10px 16px;" onclick="alert('✅ Template saved to database!')">
+                💾 Save Template
+              </button>
+            </div>
+          </div>
+
+          <!-- Live Preview Window -->
+          <div class="glass-card" style="padding:22px; display:flex; flex-direction:column;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
+              <div>
+                <span style="font-weight:700; font-size:15px;">📱 Live Render Preview</span>
+                <span style="font-size:12px; color:var(--text-sub); margin-left:8px;">Simulating: John Doe (john@acme.com)</span>
+              </div>
+              <div style="display:flex; background:rgba(255,255,255,0.05); padding:3px; border-radius:8px; gap:4px;">
+                <button class="nav-tab-btn active" id="btnPreviewDesktop" style="padding:5px 12px; font-size:11px;" onclick="toggleEmailPreviewDevice('desktop')">🖥️ Desktop</button>
+                <button class="nav-tab-btn" id="btnPreviewMobile" style="padding:5px 12px; font-size:11px;" onclick="toggleEmailPreviewDevice('mobile')">📱 Mobile</button>
+              </div>
+            </div>
+
+            <!-- Email Client Frame Mockup -->
+            <div id="emailPreviewContainer" style="flex:1; background:#ffffff; border-radius:12px; overflow:hidden; border:1px solid rgba(0,0,0,0.1); max-width:650px; margin:0 auto; width:100%; transition:all 0.3s ease; box-shadow:0 10px 30px rgba(0,0,0,0.4);">
+              <!-- Email Header -->
+              <div style="background:#f8fafc; border-bottom:1px solid #e2e8f0; padding:12px 18px; font-size:12px; color:#64748b;">
+                <div><strong>From:</strong> Dr. Robert Vance &lt;notifications@omniwebinar.io&gt;</div>
+                <div style="margin-top:2px;"><strong>Subject:</strong> <span id="previewSubjectText" style="color:#0f172a; font-weight:700;">Confirmed! Your VIP Seat for Scale Live Webinars is Locked In 🎟️</span></div>
+              </div>
+              <!-- Email Body -->
+              <div id="previewHtmlBody" style="padding:24px; color:#1e293b; font-size:14px; line-height:1.6;">
+                <!-- Dynamically rendered -->
+              </div>
+            </div>
+
+          </div>
+
+        </div>
+      </div>
+
+      <!-- SUB-TAB 3: INSTANT BROADCAST MAILER -->
+      <div id="emailBroadcast" class="email-subtab-content" style="display:none;">
+        <div class="glass-card" style="padding:26px; max-width:800px; margin:0 auto;">
+          <h3 style="font-size:20px; font-weight:800; margin-bottom:8px;">📢 Instant Broadcast Email Blast</h3>
+          <p style="font-size:13px; color:var(--text-muted); margin-bottom:20px;">
+            Send an unscheduled one-off announcement, emergency room link, or bonus resource to all attendees or a specific segment.
+          </p>
+
+          <label style="font-size:11px; font-weight:700; color:var(--text-sub);">TARGET RECIPIENT SEGMENT</label>
+          <select id="broadcastSegment" class="input-field" style="padding:10px;">
+            <option value="ALL">All 1,482 Registrants</option>
+            <option value="ATTENDED_NOW">Currently Live in Room (1,482 Attendees)</option>
+            <option value="SAW_OFFER">Attended & Saw Offer (480 Leads)</option>
+            <option value="LEFT_EARLY">Attended But Left Early (210 Leads)</option>
+            <option value="NO_SHOW">Registered No-Shows (792 Leads)</option>
+            <option value="BUYERS">Buyers & Customers Only (96 Clients)</option>
+          </select>
+
+          <label style="font-size:11px; font-weight:700; color:var(--text-sub); margin-top:12px;">BROADCAST SUBJECT LINE</label>
+          <input type="text" id="broadcastSubject" class="input-field" value="⚡ Special Announcement from Today's Live Masterclass!" />
+
+          <label style="font-size:11px; font-weight:700; color:var(--text-sub); margin-top:12px;">BROADCAST MESSAGE</label>
+          <textarea id="broadcastMessage" class="input-field" style="height:140px; resize:vertical; line-height:1.6;">Hi {FIRST_NAME},
+
+Due to high demand on today's live call, we have extended the fast-action bonus bundle for an additional 2 hours.
+
+Click here to claim your special $197 rate before the doors close permanently:
+{OFFER_URL}
+
+Best regards,
+The Webinar Team</textarea>
+
+          <button class="btn-action-primary" style="padding:14px; font-size:15px; margin-top:14px; background:linear-gradient(135deg, #ec4899, #be185d);" onclick="triggerBroadcastBlast()">
+            🚀 Dispatch Broadcast Email Blast
+          </button>
+        </div>
+      </div>
+
+      <!-- SUB-TAB 4: EMAIL ANALYTICS & ESP CONFIG -->
+      <div id="emailAnalyticsTab" class="email-subtab-content" style="display:none;">
+        <div style="display:grid; grid-template-columns:repeat(4, 1fr); gap:16px; margin-bottom:24px;">
+          <div class="glass-card" style="padding:18px;">
+            <div style="font-size:12px; color:var(--text-sub);">Emails Delivered</div>
+            <div style="font-size:26px; font-weight:800; color:#fff; margin-top:4px;">5,894</div>
+            <div style="font-size:11.5px; color:#34d399; margin-top:4px;">99.8% Deliverability</div>
+          </div>
+          <div class="glass-card" style="padding:18px;">
+            <div style="font-size:12px; color:var(--text-sub);">Unique Opens</div>
+            <div style="font-size:26px; font-weight:800; color:#34d399; margin-top:4px;">3,442</div>
+            <div style="font-size:11.5px; color:var(--text-sub); margin-top:4px;">58.4% Open Rate</div>
+          </div>
+          <div class="glass-card" style="padding:18px;">
+            <div style="font-size:12px; color:var(--text-sub);">Clicks (CTR)</div>
+            <div style="font-size:26px; font-weight:800; color:#818cf8; margin-top:4px;">2,133</div>
+            <div style="font-size:11.5px; color:var(--text-sub); margin-top:4px;">36.2% Click Rate</div>
+          </div>
+          <div class="glass-card" style="padding:18px;">
+            <div style="font-size:12px; color:var(--text-sub);">Sales via Email</div>
+            <div style="font-size:26px; font-weight:800; color:#ec4899; margin-top:4px;">$18,912</div>
+            <div style="font-size:11.5px; color:var(--text-sub); margin-top:4px;">96 Orders Generated</div>
+          </div>
+        </div>
+
+        <div class="glass-card" style="padding:22px;">
+          <h3 style="font-size:17px; font-weight:800; margin-bottom:14px;">🔌 Connected ESP / SMTP Mailer Status</h3>
+          <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:14px;">
+            <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(16,185,129,0.3); border-radius:10px; padding:14px;">
+              <div style="display:flex; justify-content:space-between; align-items:center;">
+                <strong>AWS SES</strong>
+                <span style="color:#34d399; font-size:12px; font-weight:700;">● Active (Default)</span>
+              </div>
+              <div style="font-size:12px; color:var(--text-muted); margin-top:6px;">Warm IP: 50,000/day quota</div>
+            </div>
+            <div style="background:rgba(255,255,255,0.03); border:1px solid var(--surface-border); border-radius:10px; padding:14px;">
+              <div style="display:flex; justify-content:space-between; align-items:center;">
+                <strong>SendGrid</strong>
+                <span style="color:var(--text-sub); font-size:12px;">Standby Backup</span>
+              </div>
+              <div style="font-size:12px; color:var(--text-muted); margin-top:6px;">API Key Connected</div>
+            </div>
+            <div style="background:rgba(255,255,255,0.03); border:1px solid var(--surface-border); border-radius:10px; padding:14px;">
+              <div style="display:flex; justify-content:space-between; align-items:center;">
+                <strong>Postmark</strong>
+                <span style="color:var(--text-sub); font-size:12px;">Configured</span>
+              </div>
+              <div style="font-size:12px; color:var(--text-muted); margin-top:6px;">Transactional Route</div>
+            </div>
+            <div style="background:rgba(255,255,255,0.03); border:1px solid var(--surface-border); border-radius:10px; padding:14px;">
+              <div style="display:flex; justify-content:space-between; align-items:center;">
+                <strong>CRM Webhooks</strong>
+                <span style="color:#34d399; font-size:12px;">Active</span>
+              </div>
+              <div style="font-size:12px; color:var(--text-muted); margin-top:6px;">ActiveCampaign & HubSpot</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- =======================================================================
+         VIEW 6: AI, WHATSAPP & NEXT-GEN GROWTH HUB
+         ======================================================================= -->
+    <section id="growthHub" class="view-panel">
+      <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:24px; flex-wrap:wrap; gap:16px;">
+        <div>
+          <div style="display:inline-flex; align-items:center; gap:8px; background:rgba(16,185,129,0.12); border:1px solid rgba(16,185,129,0.3); color:#34d399; padding:4px 12px; border-radius:100px; font-size:12px; font-weight:700; text-transform:uppercase; margin-bottom:8px;">
+            ⚡ 2026 Next-Gen Capabilities
+          </div>
+          <h2 style="font-size:26px; font-weight:800; letter-spacing:-0.5px;">AI, WhatsApp & OmniChannel Growth Hub</h2>
+          <p style="color:var(--text-muted); font-size:14px; margin-top:4px;">
+            Meta WhatsApp Cloud API, AI Live Chat Co-Host, Multi-Stream Simulcasting, and Affiliate Commission Engine.
+          </p>
+        </div>
+
+        <div style="display:flex; gap:10px; flex-wrap:wrap;">
+          <button class="nav-tab-btn active" style="padding:10px 16px; background:linear-gradient(135deg, #10b981, #059669); color:#fff;" onclick="switchGrowthSubTab('waTab')">
+            📱 WhatsApp Automation
+          </button>
+          <button class="nav-tab-btn" style="padding:10px 16px;" onclick="switchGrowthSubTab('aiCoHostTab')">
+            🤖 AI Co-Host & Shorts
+          </button>
+          <button class="nav-tab-btn" style="padding:10px 16px;" onclick="switchGrowthSubTab('simulcastTab')">
+            🌐 Multi-Stream Simulcast
+          </button>
+          <button class="nav-tab-btn" style="padding:10px 16px;" onclick="switchGrowthSubTab('affiliateTab')">
+            🤝 Affiliate Engine
+          </button>
+          <button class="nav-tab-btn" style="padding:10px 16px;" onclick="switchGrowthSubTab('gamifyTab')">
+            🎮 Spin-The-Wheel
+          </button>
+        </div>
+      </div>
+
+      <!-- GROWTH SUB-TAB 1: WHATSAPP AUTOMATION -->
+      <div id="waTab" class="growth-subtab-content active">
+        <div style="display:grid; grid-template-columns: 1fr 400px; gap:24px;">
+          
+          <!-- Left: WhatsApp Sequences & Blast -->
+          <div>
+            <div class="glass-card" style="padding:24px; margin-bottom:20px;">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:18px;">
+                <div>
+                  <h3 style="font-size:18px; font-weight:800;">📱 Meta WhatsApp Cloud API Automation</h3>
+                  <p style="font-size:13px; color:var(--text-muted);">98% open-rate direct messaging triggers with verified interactive CTA buttons.</p>
+                </div>
+                <span style="background:rgba(16,185,129,0.15); color:#34d399; font-weight:700; font-size:12px; padding:4px 12px; border-radius:100px;">● Official Cloud API Connected</span>
+              </div>
+
+              <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:14px; margin-bottom:24px;">
+                <div style="background:rgba(255,255,255,0.03); border:1px solid var(--surface-border); border-radius:10px; padding:16px;">
+                  <div style="font-size:12px; color:var(--text-sub);">WhatsApp Delivered</div>
+                  <div style="font-size:24px; font-weight:800; color:#fff; margin-top:4px;">1,478 / 1,482</div>
+                  <div style="font-size:11.5px; color:#34d399; margin-top:4px;">99.7% Success Rate</div>
+                </div>
+                <div style="background:rgba(255,255,255,0.03); border:1px solid var(--surface-border); border-radius:10px; padding:16px;">
+                  <div style="font-size:12px; color:var(--text-sub);">Read / Opened Rate</div>
+                  <div style="font-size:24px; font-weight:800; color:#34d399; margin-top:4px;">96.8%</div>
+                  <div style="font-size:11.5px; color:var(--text-sub); margin-top:4px;">1,431 Read in &lt; 5 min</div>
+                </div>
+                <div style="background:rgba(255,255,255,0.03); border:1px solid var(--surface-border); border-radius:10px; padding:16px;">
+                  <div style="font-size:12px; color:var(--text-sub);">Click-To-Join CTR</div>
+                  <div style="font-size:24px; font-weight:800; color:#818cf8; margin-top:4px;">68.4%</div>
+                  <div style="font-size:11.5px; color:var(--text-sub); margin-top:4px;">1,014 Entered Live Stage</div>
+                </div>
+              </div>
+
+              <!-- Automated Trigger Cards -->
+              <div style="display:flex; flex-direction:column; gap:12px;">
+                <div style="background:rgba(255,255,255,0.02); border:1px solid var(--surface-border); border-radius:10px; padding:14px; display:flex; justify-content:space-between; align-items:center;">
+                  <div>
+                    <div style="font-weight:700; font-size:14px;">1. Instant WhatsApp Seat Confirmation</div>
+                    <div style="font-size:12px; color:var(--text-muted); margin-top:2px;">Sends welcome card + 1-Click calendar add button immediately upon web registration.</div>
+                  </div>
+                  <span style="color:#34d399; font-size:12px; font-weight:700;">Active ✓</span>
+                </div>
+
+                <div style="background:rgba(255,255,255,0.02); border:1px solid var(--surface-border); border-radius:10px; padding:14px; display:flex; justify-content:space-between; align-items:center;">
+                  <div>
+                    <div style="font-weight:700; font-size:14px;">2. T - 15 Minutes Urgent Starting Alert</div>
+                    <div style="font-size:12px; color:var(--text-muted); margin-top:2px;">Direct push with prominent "⚡ Enter Live Room Now" interactive quick-reply button.</div>
+                  </div>
+                  <span style="color:#34d399; font-size:12px; font-weight:700;">Active ✓</span>
+                </div>
+
+                <div style="background:rgba(255,255,255,0.02); border:1px solid var(--surface-border); border-radius:10px; padding:14px; display:flex; justify-content:space-between; align-items:center;">
+                  <div>
+                    <div style="font-weight:700; font-size:14px;">3. Post-Webinar Replica Replay Link</div>
+                    <div style="font-size:12px; color:var(--text-muted); margin-top:2px;">Dispatched 2 hours after conclusion to all No-Shows and Early Drop-offs.</div>
+                  </div>
+                  <span style="color:#34d399; font-size:12px; font-weight:700;">Active ✓</span>
+                </div>
+              </div>
+
+              <!-- Instant WhatsApp Blast Button -->
+              <div style="margin-top:20px; padding-top:16px; border-top:1px solid var(--surface-border); display:flex; gap:12px;">
+                <button class="btn-action-primary" style="background:#10b981; flex:1;" onclick="simulateWhatsAppBlast()">
+                  📲 Send Urgent WhatsApp Reminder Blast (All 1,482)
+                </button>
+                <button class="nav-tab-btn" onclick="alert('WhatsApp Settings: Connected to Meta Cloud API (WABA ID: 88291049219)')">
+                  ⚙️ Config API
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Right: Live WhatsApp Phone Mockup Preview -->
+          <div>
+            <div style="background:#0b141a; border-radius:32px; border:8px solid #2a3942; overflow:hidden; box-shadow:0 25px 60px rgba(0,0,0,0.8); max-width:360px; margin:0 auto;">
+              <!-- WhatsApp Header -->
+              <div style="background:#202c33; padding:14px 16px; display:flex; align-items:center; gap:12px; border-bottom:1px solid rgba(255,255,255,0.05);">
+                <div style="width:36px; height:36px; border-radius:50%; background:#00a884; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:14px;">
+                  OW
+                </div>
+                <div>
+                  <div style="font-weight:700; font-size:14px; color:#e9edef;">OmniWebinar Live</div>
+                  <div style="font-size:11px; color:#8696a0;">Official Verified Business ✓</div>
+                </div>
+              </div>
+
+              <!-- Chat Messages Body -->
+              <div style="padding:16px; min-height:420px; background-color:#0b141a; background-image:radial-gradient(#1f2c34 1px, transparent 1px); background-size:16px 16px; display:flex; flex-direction:column; gap:12px;">
+                
+                <!-- Message 1: Confirmation -->
+                <div style="background:#005c4b; color:#e9edef; padding:12px 14px; border-radius:10px 10px 0 10px; font-size:12.5px; line-height:1.5; align-self:flex-start; max-width:92%; box-shadow:0 1px 2px rgba(0,0,0,0.4);">
+                  <div>🎉 <strong>Registration Confirmed!</strong></div>
+                  <div style="margin-top:4px;">Hi Rahul, your seat is reserved for <strong>Scale Live Webinars to 10k Viewers</strong> on Thursday at 8:00 PM EST.</div>
+                  <div style="font-size:10px; color:#8696a0; text-align:right; margin-top:6px;">19:40 ✓✓</div>
+                </div>
+
+                <!-- Message 2: Urgent T-15m with Buttons -->
+                <div style="background:#005c4b; color:#e9edef; padding:12px 14px; border-radius:10px 10px 0 10px; font-size:12.5px; line-height:1.5; align-self:flex-start; max-width:92%; box-shadow:0 1px 2px rgba(0,0,0,0.4);">
+                  <div>🚨 <strong>DOORS ARE OPEN NOW!</strong></div>
+                  <div style="margin-top:4px;">Dr. Vance has just started the live broadcast stream. Seats are filling fast!</div>
+                  <div style="background:rgba(0,0,0,0.25); border-radius:6px; padding:8px; margin-top:8px; text-align:center; color:#53bdeb; font-weight:700; cursor:pointer;" onclick="switchView('attendeeRoom')">
+                    ⚡ Enter Live Webinar Room
+                  </div>
+                  <div style="font-size:10px; color:#8696a0; text-align:right; margin-top:6px;">19:55 ✓✓</div>
+                </div>
+
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- GROWTH SUB-TAB 2: AI CO-HOST & AUTO-SHORTS -->
+      <div id="aiCoHostTab" class="growth-subtab-content" style="display:none;">
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:24px;">
+          
+          <!-- AI Chat Co-Host Tester -->
+          <div class="glass-card" style="padding:22px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
+              <h3 style="font-size:17px; font-weight:800;">🤖 AI Live Chat Co-Host (Auto-Moderator)</h3>
+              <span style="background:rgba(16,185,129,0.15); color:#34d399; font-weight:700; font-size:11px; padding:3px 10px; border-radius:100px;">● Gemini 2.5 Flash Active</span>
+            </div>
+            <p style="font-size:12.5px; color:var(--text-muted); margin-bottom:16px;">
+              Trained on your presentation slides, pricing, FAQs, and refund policy. Answers attendee questions in the chat automatically within 400ms!
+            </p>
+
+            <div style="background:rgba(0,0,0,0.3); border:1px solid var(--surface-border); border-radius:10px; padding:14px; min-height:200px; max-height:220px; overflow-y:auto; margin-bottom:12px;" id="aiTestChatLog">
+              <div style="font-size:12px; color:var(--text-sub); margin-bottom:8px;">[System] AI Co-Host listening to live room questions...</div>
+              <div style="background:rgba(255,255,255,0.04); padding:8px 12px; border-radius:8px; font-size:12.5px; margin-bottom:8px;">
+                <strong>Attendee (Siddharth):</strong> Will we get the recording and slides after the session?
+              </div>
+              <div style="background:rgba(99,102,241,0.15); border-left:3px solid var(--primary); padding:8px 12px; border-radius:8px; font-size:12.5px;">
+                <strong>🤖 AI Co-Host:</strong> Hi Siddharth! Yes, the 24-hour Replica Replay along with downloadable PDF slides will be emailed & sent on WhatsApp immediately after we wrap up!
+              </div>
+            </div>
+
+            <div style="display:flex; gap:8px;">
+              <input type="text" id="aiTestInput" class="input-field" placeholder="Ask a test attendee question..." style="margin-bottom:0;" onkeydown="if(event.key==='Enter') testAiCoHostQuestion()" />
+              <button class="btn-action-primary" style="width:auto; padding:0 18px;" onclick="testAiCoHostQuestion()">Ask AI</button>
+            </div>
+          </div>
+
+          <!-- AI Viral Video Shorts Generator -->
+          <div class="glass-card" style="padding:22px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
+              <h3 style="font-size:17px; font-weight:800;">✂️ Post-Webinar AI Video Shorts Generator</h3>
+              <span style="background:rgba(236,72,153,0.15); color:#ec4899; font-weight:700; font-size:11px; padding:3px 10px; border-radius:100px;">Auto-Crops 9:16</span>
+            </div>
+            <p style="font-size:12.5px; color:var(--text-muted); margin-bottom:16px;">
+              AI automatically detects highest-energy pitch moments, creates vertical reels, burns animated kinetic subtitles, and prepares viral clips for Instagram & YouTube.
+            </p>
+
+            <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:10px;">
+              <!-- Short 1 -->
+              <div style="background:rgba(255,255,255,0.03); border:1px solid var(--surface-border); border-radius:10px; padding:10px; text-align:center;">
+                <div style="background:#1e1b4b; height:110px; border-radius:6px; display:flex; align-items:center; justify-content:center; font-size:24px; margin-bottom:8px;">
+                  🎬
+                </div>
+                <div style="font-size:12px; font-weight:700;">Clip #1: The Secret Pitch</div>
+                <div style="font-size:10.5px; color:var(--text-sub);">48 sec • 1080x1920</div>
+                <button class="nav-tab-btn" style="width:100%; font-size:11px; padding:4px; margin-top:6px;" onclick="alert('📥 Downloading Short 1 MP4 with subtitles...')">Download</button>
+              </div>
+
+              <!-- Short 2 -->
+              <div style="background:rgba(255,255,255,0.03); border:1px solid var(--surface-border); border-radius:10px; padding:10px; text-align:center;">
+                <div style="background:#1e1b4b; height:110px; border-radius:6px; display:flex; align-items:center; justify-content:center; font-size:24px; margin-bottom:8px;">
+                  ⚡
+                </div>
+                <div style="font-size:12px; font-weight:700;">Clip #2: Panic Button Demo</div>
+                <div style="font-size:10.5px; color:var(--text-sub);">54 sec • 1080x1920</div>
+                <button class="nav-tab-btn" style="width:100%; font-size:11px; padding:4px; margin-top:6px;" onclick="alert('📥 Downloading Short 2 MP4 with subtitles...')">Download</button>
+              </div>
+
+              <!-- Short 3 -->
+              <div style="background:rgba(255,255,255,0.03); border:1px solid var(--surface-border); border-radius:10px; padding:10px; text-align:center;">
+                <div style="background:#1e1b4b; height:110px; border-radius:6px; display:flex; align-items:center; justify-content:center; font-size:24px; margin-bottom:8px;">
+                  🔥
+                </div>
+                <div style="font-size:12px; font-weight:700;">Clip #3: $197 Offer Reveal</div>
+                <div style="font-size:10.5px; color:var(--text-sub);">59 sec • 1080x1920</div>
+                <button class="nav-tab-btn" style="width:100%; font-size:11px; padding:4px; margin-top:6px;" onclick="alert('📥 Downloading Short 3 MP4 with subtitles...')">Download</button>
+              </div>
+            </div>
+
+          </div>
+
+        </div>
+      </div>
+
+      <!-- GROWTH SUB-TAB 3: MULTI-STREAM SIMULCAST -->
+      <div id="simulcastTab" class="growth-subtab-content" style="display:none;">
+        <div class="glass-card" style="padding:24px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+            <div>
+              <h3 style="font-size:18px; font-weight:800;">🌐 Multi-Platform Simulcast (Restream Engine)</h3>
+              <p style="font-size:13px; color:var(--text-muted);">
+                Simultaneously broadcast your private WebRTC studio stream to social channels with aggregated live chat.
+              </p>
+            </div>
+            <span style="background:rgba(16,185,129,0.15); color:#34d399; font-weight:700; font-size:12px; padding:4px 12px; border-radius:100px;">● 3 Destinations Broadcasting</span>
+          </div>
+
+          <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(280px, 1fr)); gap:18px;">
+            <!-- YouTube -->
+            <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(239,68,68,0.3); border-radius:12px; padding:18px;">
+              <div style="display:flex; justify-content:space-between; align-items:center;">
+                <div style="display:flex; align-items:center; gap:8px;">
+                  <span style="font-size:22px;">🔴</span>
+                  <strong>YouTube Live</strong>
+                </div>
+                <span style="color:#34d399; font-size:12px; font-weight:700;">STREAMING HD</span>
+              </div>
+              <div style="margin-top:12px; font-size:13px; color:var(--text-muted);">
+                <div>Active Viewers: <strong style="color:#fff;">742</strong></div>
+                <div style="margin-top:4px;">Bitrate: 4,500 kbps (1080p60)</div>
+              </div>
+            </div>
+
+            <!-- Facebook -->
+            <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(59,130,246,0.3); border-radius:12px; padding:18px;">
+              <div style="display:flex; justify-content:space-between; align-items:center;">
+                <div style="display:flex; align-items:center; gap:8px;">
+                  <span style="font-size:22px;">🔵</span>
+                  <strong>Facebook Live</strong>
+                </div>
+                <span style="color:#34d399; font-size:12px; font-weight:700;">STREAMING HD</span>
+              </div>
+              <div style="margin-top:12px; font-size:13px; color:var(--text-muted);">
+                <div>Active Viewers: <strong style="color:#fff;">418</strong></div>
+                <div style="margin-top:4px;">Bitrate: 4,000 kbps (1080p30)</div>
+              </div>
+            </div>
+
+            <!-- LinkedIn -->
+            <div style="background:rgba(255,255,255,0.03); border:1px solid rgba(14,165,233,0.3); border-radius:12px; padding:18px;">
+              <div style="display:flex; justify-content:space-between; align-items:center;">
+                <div style="display:flex; align-items:center; gap:8px;">
+                  <span style="font-size:22px;">🔗</span>
+                  <strong>LinkedIn Live</strong>
+                </div>
+                <span style="color:#34d399; font-size:12px; font-weight:700;">STREAMING HD</span>
+              </div>
+              <div style="margin-top:12px; font-size:13px; color:var(--text-muted);">
+                <div>Active Viewers: <strong style="color:#fff;">285</strong></div>
+                <div style="margin-top:4px;">Bitrate: 3,500 kbps (720p60)</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- GROWTH SUB-TAB 4: AFFILIATE & PARTNER COMMISSION ENGINE -->
+      <div id="affiliateTab" class="growth-subtab-content" style="display:none;">
+        <div class="glass-card" style="padding:24px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+            <div>
+              <h3 style="font-size:18px; font-weight:800;">🤝 Affiliate Partner Commission Tracking</h3>
+              <p style="font-size:13px; color:var(--text-muted);">
+                Empower influencers and affiliates to promote your webinar with custom tracking links and automated commission payouts.
+              </p>
+            </div>
+            <button class="btn-action-primary" style="width:auto; padding:8px 16px;" onclick="alert('➕ Generated unique affiliate tracking URL: https://omniwebinar.io/w/live?ref=partner_alex')">
+              + Add Partner Link
+            </button>
+          </div>
+
+          <table style="width:100%; border-collapse:collapse; font-size:13px; text-align:left;">
+            <thead>
+              <tr style="border-bottom:1px solid var(--surface-border); color:var(--text-sub);">
+                <th style="padding:10px;">PARTNER / AFFILIATE</th>
+                <th>REFERRAL CODE</th>
+                <th>CLICKS</th>
+                <th>REGISTRATIONS</th>
+                <th>SALES CLOSED</th>
+                <th>COMMISSION (30%)</th>
+                <th>PAYOUT STATUS</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr style="border-bottom:1px solid rgba(255,255,255,0.04);">
+                <td style="padding:12px 10px;"><strong>Rahul Sharma (Tech Lead)</strong></td>
+                <td><code>?ref=rahul_tech</code></td>
+                <td>1,420</td>
+                <td>280</td>
+                <td>22 ($4,334)</td>
+                <td style="color:#34d399; font-weight:700;">$1,300.20</td>
+                <td><span style="background:rgba(16,185,129,0.15); color:#34d399; padding:2px 8px; border-radius:4px; font-size:11px;">PAID ✓</span></td>
+              </tr>
+              <tr style="border-bottom:1px solid rgba(255,255,255,0.04);">
+                <td style="padding:12px 10px;"><strong>Growth Media Agency</strong></td>
+                <td><code>?ref=growth_agency</code></td>
+                <td>2,140</td>
+                <td>420</td>
+                <td>34 ($6,698)</td>
+                <td style="color:#34d399; font-weight:700;">$2,009.40</td>
+                <td><span style="background:rgba(16,185,129,0.15); color:#34d399; padding:2px 8px; border-radius:4px; font-size:11px;">PAID ✓</span></td>
+              </tr>
+              <tr>
+                <td style="padding:12px 10px;"><strong>Priya Patel Coaching</strong></td>
+                <td><code>?ref=priya_vip</code></td>
+                <td>890</td>
+                <td>195</td>
+                <td>16 ($3,152)</td>
+                <td style="color:#34d399; font-weight:700;">$945.60</td>
+                <td><span style="background:rgba(245,158,11,0.15); color:#f59e0b; padding:2px 8px; border-radius:4px; font-size:11px;">PENDING</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- GROWTH SUB-TAB 5: GAMIFICATION & SPIN-THE-WHEEL -->
+      <div id="gamifyTab" class="growth-subtab-content" style="display:none;">
+        <div class="glass-card" style="padding:24px; text-align:center;">
+          <h3 style="font-size:22px; font-weight:800; margin-bottom:8px;">🎮 Live Audience Spin-The-Wheel Lucky Draw</h3>
+          <p style="font-size:14px; color:var(--text-muted); max-width:600px; margin:0 auto 24px;">
+            Keep attendees glued until the very end. Click below to spin the live giveaway wheel across all 1,482 attendee screens simultaneously!
+          </p>
+
+          <div style="display:flex; justify-content:center; margin-bottom:24px;">
+            <canvas id="wheelCanvas" width="340" height="340" style="border-radius:50%; box-shadow:0 0 40px rgba(99,102,241,0.4); border:4px solid #6366f1;"></canvas>
+          </div>
+
+          <button class="btn-action-primary" style="max-width:300px; margin:0 auto; padding:14px 24px; font-size:16px; background:linear-gradient(135deg, #ec4899, #8b5cf6);" onclick="spinLuckyWheel()">
+            🎡 SPIN THE WHEEL LIVE NOW
+          </button>
+        </div>
+      </div>
+
+    </section>
+
+  </main>
+
+  <!-- 1. Enhanced Checkout Modal for Offer Purchase -->
+  <div class="modal-backdrop" id="checkoutModal">
+    <div class="modal-box">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+        <h3 style="font-size:18px; font-weight:800;">⚡ Instant 1-Click Checkout</h3>
+        <button onclick="closeCheckoutModal()" style="background:none; border:none; color:var(--text-muted); font-size:20px; cursor:pointer;">✕</button>
+      </div>
+
+      <div style="background:rgba(255,255,255,0.04); border:1px solid var(--surface-border); border-radius:10px; padding:14px; margin-bottom:18px;">
+        <div style="font-weight:700; font-size:15px;" id="modalProductTitle">Webinar Mastermind Accelerator</div>
+        <div style="color:#34d399; font-weight:800; font-size:22px; margin-top:4px;" id="modalProductPrice">$197</div>
+      </div>
+
+      <!-- Payment Method Switcher -->
+      <div class="payment-tab-row">
+        <button class="payment-tab-btn active" id="payTabCard" onclick="switchPaymentMethod('card')">💳 Card</button>
+        <button class="payment-tab-btn" id="payTabUpi" onclick="switchPaymentMethod('upi')">⚡ UPI / QR</button>
+        <button class="payment-tab-btn" id="payTabNet" onclick="switchPaymentMethod('netbanking')">🏦 NetBanking</button>
+      </div>
+
+      <div id="paymentFieldsCard">
+        <label style="font-size:11px; font-weight:700; color:var(--text-sub);">NAME ON CARD</label>
+        <input type="text" id="payCardName" class="input-field" value="Alex Hunter" />
+
+        <label style="font-size:11px; font-weight:700; color:var(--text-sub);">CARD DETAILS</label>
+        <input type="text" id="payCardDetails" class="input-field" value="•••• •••• •••• 4242   |   12/28   |   CVC 987" />
+      </div>
+
+      <div id="paymentFieldsUpi" style="display:none; text-align:center; padding:10px 0;">
+        <div style="font-size:13px; color:var(--text-muted); margin-bottom:8px;">Scan & Pay via any UPI App (GPay, PhonePe, Paytm)</div>
+        <div style="width:140px; height:140px; margin:0 auto 12px; background:#fff; border-radius:8px; display:flex; align-items:center; justify-content:center; color:#000; font-weight:800;">
+          QR_DEMO_UPI
+        </div>
+        <input type="text" class="input-field" placeholder="Or enter UPI ID (e.g. alex@okaxis)" value="alex@okhdfcbank" />
+      </div>
+
+      <div id="paymentFieldsNet" style="display:none;">
+        <label style="font-size:11px; font-weight:700; color:var(--text-sub);">SELECT BANK</label>
+        <select class="input-field" style="padding:10px;">
+          <option>HDFC Bank</option>
+          <option>ICICI Bank</option>
+          <option>State Bank of India</option>
+          <option>JPMorgan Chase</option>
+        </select>
+      </div>
+
+      <button class="btn-action-primary" id="btnPayOrder" style="background:#10b981; padding:14px; margin-top:14px;" onclick="completePurchase()">
+        Pay Now & Unlock Mastermind ($197)
+      </button>
+    </div>
+  </div>
+
+  <!-- 2. Order Confirmation & Instant Receipt Modal -->
+  <div class="modal-backdrop" id="orderReceiptModal">
+    <div class="modal-box" style="max-width:520px; text-align:center;">
+      <div style="width:60px; height:60px; border-radius:50%; background:rgba(16,185,129,0.15); border:2px solid #10b981; display:flex; align-items:center; justify-content:center; font-size:28px; margin:0 auto 16px;">
+        ✓
+      </div>
+      <h3 style="font-size:22px; font-weight:800; color:#fff; margin-bottom:4px;">Payment Successful!</h3>
+      <p style="font-size:13px; color:var(--text-muted); margin-bottom:18px;">Your access to the AI Automation Mastermind has been provisioned.</p>
+
+      <div style="background:rgba(255,255,255,0.03); border:1px solid var(--surface-border); border-radius:12px; padding:16px; text-align:left; margin-bottom:20px; font-size:13px;">
+        <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
+          <span style="color:var(--text-sub);">Order ID:</span>
+          <strong id="receiptOrderId" style="color:#fff;">ORD-8921-XF</strong>
+        </div>
+        <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
+          <span style="color:var(--text-sub);">Amount Paid:</span>
+          <strong id="receiptAmount" style="color:#34d399;">$197.00 USD</strong>
+        </div>
+        <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
+          <span style="color:var(--text-sub);">License Key:</span>
+          <code id="receiptLicense" style="color:#818cf8;">OMNI-AI-PRO-98421</code>
+        </div>
+        <div style="display:flex; justify-content:space-between;">
+          <span style="color:var(--text-sub);">Onboarding Status:</span>
+          <span style="color:#10b981; font-weight:700;">Credentials Emailed ✓</span>
+        </div>
+      </div>
+
+      <button class="btn-action-primary" style="padding:12px;" onclick="closeReceiptModal()">
+        Return to Live Stage
+      </button>
+    </div>
+  </div>
+
+  <!-- 3. Registration Success & Calendar Integration Modal -->
+  <div class="modal-backdrop" id="regSuccessModal">
+    <div class="modal-box" style="max-width:500px; text-align:center;">
+      <div style="font-size:42px; margin-bottom:12px;">🎉</div>
+      <h3 style="font-size:22px; font-weight:800; color:#fff; margin-bottom:6px;">You're Registered!</h3>
+      <p style="font-size:13.5px; color:var(--text-muted); margin-bottom:20px;">
+        Your VIP seat has been confirmed for the <strong>High-Ticket AI Automation Masterclass</strong>.
+      </p>
+
+      <!-- Calendar Buttons -->
+      <div style="display:flex; flex-direction:column; gap:10px; margin-bottom:20px;">
+        <a id="btnAddToGCal" href="#" target="_blank" class="nav-tab-btn" style="justify-content:center; padding:12px; font-size:13.5px; background:rgba(99,102,241,0.15); border:1px solid var(--primary); color:#fff; text-decoration:none;">
+          📅 Add to Google Calendar
+        </a>
+        <a id="btnAddToIcs" href="/api/calendar/webinar-101.ics" download class="nav-tab-btn" style="justify-content:center; padding:12px; font-size:13.5px; background:rgba(255,255,255,0.06); text-decoration:none;">
+          🍎 Download .ics (Apple & Outlook)
+        </a>
+      </div>
+
+      <div style="background:rgba(255,255,255,0.03); border:1px dashed var(--surface-border); border-radius:10px; padding:12px; margin-bottom:20px;">
+        <div style="font-size:11px; color:var(--text-sub); margin-bottom:4px;">YOUR UNIQUE 1-CLICK JOIN LINK</div>
+        <div style="font-size:12.5px; color:#818cf8; word-break:break-all;" id="regUniqueJoinLink">http://localhost:3000/index.html?view=attendeeRoom</div>
+      </div>
+
+      <button class="btn-action-primary" style="padding:14px; font-size:15px;" onclick="enterWebinarFromReg()">
+        🚀 Enter Live Webinar Studio Now
+      </button>
+    </div>
+  </div>
+
+  <!-- 4. Attendee Stage Invitation Modal -->
+  <div class="modal-backdrop" id="stageInviteModal">
+    <div class="modal-box" style="text-align:center;">
+      <div style="width:64px; height:64px; border-radius:50%; background:rgba(99,102,241,0.15); border:2px solid var(--primary); display:flex; align-items:center; justify-content:center; font-size:30px; margin:0 auto 16px;">
+        🎙️
+      </div>
+      <h3 style="font-size:22px; font-weight:800; margin-bottom:8px;">You're Invited to the Live Stage!</h3>
+      <p style="font-size:14px; color:var(--text-muted); margin-bottom:24px; line-height:1.6;">
+        Host Alex Vance has invited you to speak live on the main stage before 1,482 attendees. Allow your camera and microphone to join.
+      </p>
+      <div style="display:flex; gap:12px; justify-content:center;">
+        <button class="btn-action-primary" style="background:#10b981; padding:12px 24px; font-size:14px; width:auto;" onclick="acceptStageInvite()">
+          ✅ Accept & Join Stage
+        </button>
+        <button class="nav-tab-btn" style="padding:12px 20px;" onclick="declineStageInvite()">
+          Decline
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- SCRIPT LOGIC: WEBRTC SIMULATION, MULTI-TAB BROADCAST CHANNEL, PANIC BUTTON, REAL-TIME OFFERS & POLLS -->
+  <script>
+    // =========================================================================
+    // 1. Dual Real-Time Networking: WebSocket (Multi-Device) + BroadcastChannel (Local Tabs)
+    // =========================================================================
+    const syncChannel = new BroadcastChannel('omniwebinar_sync_channel');
+    let ws = null;
+    const clientId = 'client_' + Math.random().toString(36).substring(2, 9);
+    let myRole = window.location.search.includes('view=attendeeRoom') ? 'attendee' : 'host';
+
+    function initWebSocket() {
+      const protocol = location.protocol === 'https:' ? 'wss:' : 'ws:';
+      const wsUrl = `${protocol}//${location.host}`;
+      try {
+        ws = new WebSocket(wsUrl);
+        ws.onopen = () => {
+          console.log("⚡ WebSocket Connected to OmniWebinar Engine");
+          const syncText = document.getElementById('syncText');
+          if (syncText) syncText.innerText = "Sync Active: WebSocket Live SFU";
+          const syncStatus = document.getElementById('syncStatus');
+          if (syncStatus) {
+            syncStatus.style.background = 'rgba(16, 185, 129, 0.15)';
+            syncStatus.style.borderColor = 'rgba(16, 185, 129, 0.3)';
+            syncStatus.style.color = '#34d399';
+          }
+          ws.send(JSON.stringify({ type: 'JOIN_ROOM', role: myRole, name: 'Attendee ' + clientId.substring(7) }));
+        };
+        ws.onmessage = (event) => {
+          try {
+            const data = JSON.parse(event.data);
+            handleRealtimeEvent(data.type, data);
+          } catch(e) {}
+        };
+        ws.onclose = () => {
+          const syncText = document.getElementById('syncText');
+          if (syncText) syncText.innerText = "Sync Active (Tab Relay)";
+          setTimeout(initWebSocket, 2500);
+        };
+      } catch(err) {
+        console.warn("WebSocket fallback:", err);
+      }
+    }
+    initWebSocket();
+
+    function broadcastEvent(type, payload = {}) {
+      syncChannel.postMessage({ type, payload });
+      if (ws && ws.readyState === WebSocket.OPEN) {
+        ws.send(JSON.stringify({ type, ...payload }));
+      }
+    }
+
+    syncChannel.onmessage = (event) => {
+      const { type, payload } = event.data;
+      handleRealtimeEvent(type, payload);
+    };
+
+    function handleRealtimeEvent(type, payload) {
+      if (type === 'PANIC_BUTTON_TRIGGERED' || type === 'PANIC_TRIGGER') {
+        handlePanicReceived(payload);
+      } else if (type === 'OFFER_PUSHED' || type === 'OFFER_PUSH') {
+        handleOfferReceived(payload.offer || payload);
+      } else if (type === 'POLL_LAUNCHED' || type === 'POLL_LAUNCH') {
+        handlePollReceived(payload.poll || payload);
+      } else if (type === 'POLL_VOTE_UPDATE') {
+        // update poll vote tallies
+      } else if (type === 'HANDOUT_PUSHED' || type === 'HANDOUT_PUSH') {
+        handleHandoutReceived(payload.handout || payload);
+      } else if (type === 'CHAT_MESSAGE') {
+        appendChatMessage(payload.sender, payload.text, payload.isHost);
+      } else if (type === 'REACTION') {
+        renderFloatingEmoji(payload.emoji);
+      } else if (type === 'QNA_NEW_QUESTION') {
+        addQnAQuestionLocally(payload.question || payload);
+      } else if (type === 'QNA_UPVOTE_UPDATE') {
+        updateQnAUpvotesLocally(payload.questionId, payload.upvotes);
+      } else if (type === 'QNA_ANSWERING_LIVE') {
+        setLiveAnsweringBanner(payload.question);
+      } else if (type === 'RAISED_HANDS_UPDATE') {
+        if (payload.raisedHands) updateRaisedHandsLocally(payload.raisedHands);
+      } else if (type === 'STAGE_INVITATION') {
+        if (payload.attendeeId === clientId || !payload.attendeeId) {
+          showStageInviteModal();
+        }
+      } else if (type === 'STAGE_SPEAKERS_UPDATE') {
+        if (payload.speakers) updateStageSpeakersLocally(payload.speakers);
+      } else if (type === 'SLIDE_CHANGE') {
+        setSlideLocally(payload.slideNumber);
+      }
+    }
+
+    // =========================================================================
+    // 2. View & Tab Switchers
+    // =========================================================================
+    function switchView(viewId) {
+      document.querySelectorAll('.view-panel').forEach(el => el.classList.remove('active'));
+      document.querySelectorAll('.nav-tab-btn').forEach(el => el.classList.remove('active'));
+      
+      const target = document.getElementById(viewId);
+      if (target) target.classList.add('active');
+      if (event && event.currentTarget) event.currentTarget.classList.add('active');
+    }
+
+    function switchSidebarTab(tabId) {
+      document.querySelectorAll('.sidebar-tab-content').forEach(el => el.classList.remove('active'));
+      document.querySelectorAll('.sidebar-tab-btn').forEach(el => el.classList.remove('active'));
+
+      const target = document.getElementById(tabId);
+      if (target) target.classList.add('active');
+      if (event && event.currentTarget) event.currentTarget.classList.add('active');
+    }
+
+    function switchAttendeeTab(tabId) {
+      ['attendeeChatTab', 'attendeeQnaTab', 'attendeeOffersTab', 'attendeeHandoutsTab'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.style.display = 'none';
+      });
+      ['attTabChatBtn', 'attTabQnaBtn', 'attTabOffersBtn', 'attTabHandoutsBtn'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.classList.remove('active');
+      });
+      const target = document.getElementById(tabId);
+      if (target) target.style.display = (tabId === 'attendeeChatTab' || tabId === 'attendeeQnaTab') ? 'flex' : 'block';
+      if (event && event.currentTarget) event.currentTarget.classList.add('active');
+    }
+
+    // =========================================================================
+    // 3. Stage Simulation & Real Webcam/Mic Controls
+    // =========================================================================
+    const hostCanvas = document.getElementById('stageCanvas');
+    const hostCtx = hostCanvas.getContext('2d');
+    const attendeeCanvas = document.getElementById('attendeeCanvas');
+    const attendeeCtx = attendeeCanvas.getContext('2d');
+    const stageVideo = document.getElementById('stageVideo');
+
+    let isMicOn = true;
+    let isCamOn = true;
+    let isScreenSharing = false;
+    let isDrawingMode = false;
+    let localStream = null;
+    let currentLayout = 'solo'; // 'solo', 'grid', 'pip'
+    let whiteboardStrokes = [];
+
+    // Resize canvases
+    function resizeCanvases() {
+      if (hostCanvas.parentElement) {
+        hostCanvas.width = hostCanvas.parentElement.clientWidth;
+        hostCanvas.height = hostCanvas.parentElement.clientHeight;
+      }
+      if (attendeeCanvas.parentElement) {
+        attendeeCanvas.width = attendeeCanvas.parentElement.clientWidth;
+        attendeeCanvas.height = attendeeCanvas.parentElement.clientHeight;
+      }
+    }
+    window.addEventListener('resize', resizeCanvases);
+    setTimeout(resizeCanvases, 100);
+
+    // Audio VU meter decibel animation
+    setInterval(() => {
+      if (isMicOn) {
+        const level = 20 + Math.random() * 65;
+        document.getElementById('vuMeterFill').style.width = level + '%';
+      } else {
+        document.getElementById('vuMeterFill').style.width = '0%';
+      }
+    }, 100);
+
+    // Render loop for Host & Attendee stages
+    let animFrame = 0;
+    function renderStages() {
+      animFrame++;
+
+      // Render on Host Canvas
+      renderSingleStage(hostCtx, hostCanvas.width, hostCanvas.height, "Host Studio (Primary)");
+      // Render on Attendee Canvas
+      renderSingleStage(attendeeCtx, attendeeCanvas.width, attendeeCanvas.height, "Attendee Feed (HD Broadcast)");
+
+      requestAnimationFrame(renderStages);
+    }
+    requestAnimationFrame(renderStages);
+
+    function renderSingleStage(ctx, w, h, label) {
+      if (!w || !h) return;
+      ctx.clearRect(0, 0, w, h);
+
+      if (currentStageSource === 'slides') {
+        // Render Interactive Slide Deck Presentation
+        renderSlideDeck(ctx, w, h);
+      } else if (stageVideo.srcObject && isCamOn && !isScreenSharing && currentStageSource === 'camera') {
+        // Draw real webcam feed
+        ctx.drawImage(stageVideo, 0, 0, w, h);
+      } else {
+        // Elegant Simulated Presenter Visuals
+        const gradient = ctx.createLinearGradient(0, 0, w, h);
+        gradient.addColorStop(0, '#0f172a');
+        gradient.addColorStop(0.5, '#1e1b4b');
+        gradient.addColorStop(1, '#020617');
+        ctx.fillStyle = gradient;
+        ctx.fillRect(0, 0, w, h);
+
+        // Animated wave graphics
+        ctx.save();
+        ctx.strokeStyle = 'rgba(99, 102, 241, 0.25)';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        for (let x = 0; x < w; x += 10) {
+          const y = h / 2 + Math.sin((x + animFrame * 3) * 0.015) * 40 + Math.cos((x - animFrame) * 0.02) * 20;
+          if (x === 0) ctx.moveTo(x, y);
+          else ctx.lineTo(x, y);
+        }
+        ctx.stroke();
+        ctx.restore();
+
+        // Check if attendee has joined stage
+        const hasGuest = stageSpeakersList.length > 0;
+
+        if (currentLayout === 'solo' && !hasGuest) {
+          drawSpeakerCard(ctx, w/2 - 120, h/2 - 120, 240, 240, "Dr. Robert Vance", "Chief Growth Architect");
+        } else if (currentLayout === 'grid' || hasGuest) {
+          const guestName = hasGuest ? stageSpeakersList[0].name : "Elena Rostova";
+          const guestRole = hasGuest ? "Guest Speaker (Live Attendee)" : "Co-Presenter";
+          drawSpeakerCard(ctx, w/4 - 100, h/2 - 100, 200, 200, "Dr. Robert Vance", "Host");
+          drawSpeakerCard(ctx, (3*w)/4 - 100, h/2 - 100, 200, 200, guestName, guestRole);
+        } else if (currentLayout === 'pip') {
+          renderSlideDeck(ctx, w, h);
+        }
+      }
+
+      // Draw Whiteboard Strokes over Stage or Slides
+      ctx.save();
+      ctx.strokeStyle = '#ec4899';
+      ctx.lineWidth = 4;
+      ctx.lineCap = 'round';
+      for (const stroke of whiteboardStrokes) {
+        ctx.beginPath();
+        for (let i = 0; i < stroke.length; i++) {
+          const pt = stroke[i];
+          if (i === 0) ctx.moveTo(pt.x * w, pt.y * h);
+          else ctx.lineTo(pt.x * w, pt.y * h);
+        }
+        ctx.stroke();
+      }
+      ctx.restore();
+    }
+
+    function renderSlideDeck(ctx, w, h) {
+      const slide = slidesData[currentSlideIndex] || slidesData[0];
+      
+      ctx.save();
+      const margin = 24;
+      const cardW = w - margin * 2;
+      const cardH = h - margin * 2;
+      
+      // Slide Card Canvas
+      ctx.fillStyle = '#0a0d18';
+      ctx.strokeStyle = 'rgba(99, 102, 241, 0.4)';
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.roundRect(margin, margin, cardW, cardH, 16);
+      ctx.fill();
+      ctx.stroke();
+
+      // Top slide badge
+      ctx.fillStyle = '#818cf8';
+      ctx.font = 'bold 12px "Plus Jakarta Sans"';
+      ctx.fillText(`OMNIWEBINAR PRO • SLIDE 0${currentSlideIndex + 1} OF 06`, margin + 28, margin + 40);
+
+      // Slide Title
+      ctx.fillStyle = '#ffffff';
+      ctx.font = 'bold 20px "Plus Jakarta Sans"';
+      ctx.fillText(slide.title, margin + 28, margin + 75);
+
+      // Subtitle
+      ctx.fillStyle = '#94a3b8';
+      ctx.font = '13px "Plus Jakarta Sans"';
+      ctx.fillText(slide.subtitle, margin + 28, margin + 102);
+
+      // Bullet points
+      ctx.font = '14.5px "Plus Jakarta Sans"';
+      slide.points.forEach((pt, i) => {
+        const yPos = margin + 148 + i * 38;
+        // Glowing bullet dot
+        ctx.fillStyle = '#10b981';
+        ctx.beginPath();
+        ctx.arc(margin + 36, yPos - 5, 4.5, 0, Math.PI * 2);
+        ctx.fill();
+        
+        ctx.fillStyle = '#f1f5f9';
+        ctx.fillText(pt, margin + 54, yPos);
+      });
+
+      // Presenter PIP Box in corner
+      const pipW = 150;
+      const pipH = 110;
+      const pipX = w - margin - pipW - 16;
+      const pipY = h - margin - pipH - 16;
+      
+      drawSpeakerCard(ctx, pipX, pipY, pipW, pipH, "Host Alex", "Live PIP");
+      ctx.restore();
+    }
+
+    function drawSpeakerCard(ctx, x, y, cw, ch, name, title) {
+      ctx.save();
+      ctx.fillStyle = 'rgba(30, 41, 59, 0.7)';
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.12)';
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.roundRect(x, y, cw, ch, 16);
+      ctx.fill();
+      ctx.stroke();
+
+      // Avatar circle
+      ctx.fillStyle = '#4f46e5';
+      ctx.beginPath();
+      ctx.arc(x + cw/2, y + ch/2 - 20, 36, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = '#fff';
+      ctx.font = 'bold 20px "Plus Jakarta Sans"';
+      ctx.textAlign = 'center';
+      ctx.fillText(name.charAt(0), x + cw/2, y + ch/2 - 13);
+
+      // Name & Title
+      ctx.fillStyle = '#f8fafc';
+      ctx.font = 'bold 14px "Plus Jakarta Sans"';
+      ctx.fillText(name, x + cw/2, y + ch - 40);
+      ctx.fillStyle = '#94a3b8';
+      ctx.font = '11px "Plus Jakarta Sans"';
+      ctx.fillText(title, x + cw/2, y + ch - 22);
+      ctx.restore();
+    }
+
+    // Toggle Webcam
+    async function toggleCamera() {
+      const btn = document.getElementById('camBtn');
+      if (!isCamOn) {
+        try {
+          localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: isMicOn });
+          stageVideo.srcObject = localStream;
+          isCamOn = true;
+          btn.classList.add('active');
+          btn.classList.remove('off');
+        } catch (err) {
+          alert("Webcam permission denied or not available. Using high-fidelity animated simulation.");
+          isCamOn = true;
+          btn.classList.add('active');
+        }
+      } else {
+        if (localStream) {
+          localStream.getVideoTracks().forEach(t => t.stop());
+        }
+        isCamOn = false;
+        btn.classList.remove('active');
+        btn.classList.add('off');
+      }
+    }
+
+    function toggleMic() {
+      isMicOn = !isMicOn;
+      const btn = document.getElementById('micBtn');
+      if (isMicOn) {
+        btn.classList.add('active');
+        btn.classList.remove('off');
+      } else {
+        btn.classList.remove('active');
+        btn.classList.add('off');
+      }
+    }
+
+    async function toggleScreenShare() {
+      const btn = document.getElementById('screenBtn');
+      if (!isScreenSharing) {
+        try {
+          const screenStream = await navigator.mediaDevices.getDisplayMedia({ video: true });
+          stageVideo.srcObject = screenStream;
+          isScreenSharing = true;
+          btn.classList.add('active');
+          screenStream.getVideoTracks()[0].onended = () => {
+            isScreenSharing = false;
+            btn.classList.remove('active');
+            if (isCamOn && localStream) stageVideo.srcObject = localStream;
+          };
+        } catch (e) {
+          console.log("Screen share cancelled");
+        }
+      } else {
+        isScreenSharing = false;
+        btn.classList.remove('active');
+        if (isCamOn && localStream) stageVideo.srcObject = localStream;
+      }
+    }
+
+    function changeLayout(layout) {
+      currentLayout = layout;
+    }
+
+    // Whiteboard drawing on Canvas
+    let currentStroke = null;
+    hostCanvas.addEventListener('mousedown', (e) => {
+      if (!isDrawingMode) return;
+      const rect = hostCanvas.getBoundingClientRect();
+      currentStroke = [{ x: (e.clientX - rect.left) / rect.width, y: (e.clientY - rect.top) / rect.height }];
+      whiteboardStrokes.push(currentStroke);
+    });
+    hostCanvas.addEventListener('mousemove', (e) => {
+      if (!isDrawingMode || !currentStroke) return;
+      const rect = hostCanvas.getBoundingClientRect();
+      currentStroke.push({ x: (e.clientX - rect.left) / rect.width, y: (e.clientY - rect.top) / rect.height });
+    });
+    window.addEventListener('mouseup', () => { currentStroke = null; });
+
+    function toggleDrawing() {
+      isDrawingMode = !isDrawingMode;
+      document.getElementById('drawBtn').classList.toggle('active', isDrawingMode);
+    }
+    function clearWhiteboard() {
+      whiteboardStrokes = [];
+    }
+
+    // =========================================================================
+    // 4. THE PANIC BUTTON (WebinarJam Disaster Recovery Architecture)
+    // =========================================================================
+    let panicTriggered = false;
+
+    function triggerPanicButton() {
+      if (confirm("⚠️ TRIGGER PANIC BUTTON?\n\nThis will spin up the emergency Shadow Backup Room, re-initialize presenter audio/video, and automatically migrate all 1,482 attendees in < 10 seconds.")) {
+        panicTriggered = true;
+        
+        // Visual Alerts in Host
+        document.getElementById('panicGlow').style.opacity = '0.7';
+        document.getElementById('panicBtn').style.background = '#059669';
+        document.getElementById('panicBtn').innerHTML = '<span>✅ RECOVERED (SHADOW 02)</span>';
+        document.getElementById('hostRoomStatusText').innerText = 'SHADOW_ROOM_02 (ACTIVE RECOVERY)';
+        document.getElementById('hostRoomStatusText').style.color = '#34d399';
+
+        // Broadcast to all Attendee Tabs
+        syncChannel.postMessage({
+          type: 'PANIC_BUTTON_TRIGGERED',
+          payload: {
+            newRoom: 'Room_Shadow_02',
+            recoverySeconds: 3
+          }
+        });
+
+        setTimeout(() => {
+          document.getElementById('panicGlow').style.opacity = '0';
+        }, 4000);
+      }
+    }
+
+    function handlePanicReceived(payload) {
+      const overlay = document.getElementById('panicFailoverOverlay');
+      overlay.style.display = 'flex';
+      
+      let count = payload.recoverySeconds || 3;
+      const countEl = document.getElementById('failoverCountdown');
+      
+      const timer = setInterval(() => {
+        count--;
+        if (count <= 0) {
+          clearInterval(timer);
+          overlay.style.display = 'none';
+          document.getElementById('attendeeRoomId').innerText = 'CONNECTED: Shadow Backup Room 02 (Seamlessly Restored)';
+          document.getElementById('attendeeRoomId').style.color = '#34d399';
+        } else {
+          countEl.innerText = `Migrating in ${count}s...`;
+        }
+      }, 1000);
+    }
+
+    // =========================================================================
+    // 5. Timed Offers Module
+    // =========================================================================
+    let offerInterval = null;
+
+    function pushOfferToAttendees() {
+      const title = document.getElementById('offerTitleInput').value;
+      const regPrice = document.getElementById('offerRegPrice').value;
+      const salePrice = document.getElementById('offerSalePrice').value;
+      const duration = parseInt(document.getElementById('offerDuration').value, 10);
+      const units = document.getElementById('offerUnits').value;
+
+      const payload = { title, regPrice, salePrice, duration, units };
+
+      // Send via BroadcastChannel
+      syncChannel.postMessage({ type: 'OFFER_PUSHED', payload });
+      // Trigger locally too
+      handleOfferReceived(payload);
+
+      alert("🔥 Offer successfully pushed to all live attendees!");
+    }
+
+    function handleOfferReceived(payload) {
+      const card = document.getElementById('attendeeOfferCard');
+      document.getElementById('attendeeOfferTitle').innerText = payload.title;
+      document.getElementById('attendeeRegPrice').innerText = payload.regPrice;
+      document.getElementById('attendeeSalePrice').innerText = payload.salePrice;
+      document.getElementById('attendeeUnitsLeft').innerText = `Only ${payload.units} left!`;
+      
+      card.style.display = 'block';
+
+      // Start countdown
+      let remaining = payload.duration;
+      if (offerInterval) clearInterval(offerInterval);
+      
+      offerInterval = setInterval(() => {
+        remaining--;
+        if (remaining <= 0) {
+          clearInterval(offerInterval);
+          card.style.display = 'none';
+        } else {
+          const mins = String(Math.floor(remaining / 60)).padStart(2, '0');
+          const secs = String(remaining % 60).padStart(2, '0');
+          document.getElementById('offerTimeLeft').innerText = `${mins}:${secs}`;
+        }
+      }, 1000);
+    }
+
+    function claimOfferModal() {
+      document.getElementById('modalProductTitle').innerText = document.getElementById('attendeeOfferTitle').innerText;
+      document.getElementById('modalProductPrice').innerText = document.getElementById('attendeeSalePrice').innerText;
+      document.getElementById('checkoutModal').style.display = 'flex';
+    }
+    function closeCheckoutModal() {
+      document.getElementById('checkoutModal').style.display = 'none';
+    }
+
+    // Payment method switcher
+    let currentPaymentMethod = 'card';
+    function switchPaymentMethod(method) {
+      currentPaymentMethod = method;
+      ['payTabCard', 'payTabUpi', 'payTabNet'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.classList.remove('active');
+      });
+      document.getElementById('paymentFieldsCard').style.display = 'none';
+      document.getElementById('paymentFieldsUpi').style.display = 'none';
+      document.getElementById('paymentFieldsNet').style.display = 'none';
+
+      if (method === 'card') {
+        document.getElementById('payTabCard').classList.add('active');
+        document.getElementById('paymentFieldsCard').style.display = 'block';
+      } else if (method === 'upi') {
+        document.getElementById('payTabUpi').classList.add('active');
+        document.getElementById('paymentFieldsUpi').style.display = 'block';
+      } else {
+        document.getElementById('payTabNet').classList.add('active');
+        document.getElementById('paymentFieldsNet').style.display = 'block';
+      }
+    }
+
+    // Real Checkout & Order Processing
+    async function completePurchase() {
+      const btn = document.getElementById('btnPayOrder');
+      if (btn) {
+        btn.innerText = "Processing Order...";
+        btn.disabled = true;
+      }
+
+      const customerName = document.getElementById('payCardName').value || 'Alex Hunter';
+      const productTitle = document.getElementById('modalProductTitle').innerText || 'AI Automation Agency Accelerator';
+
+      try {
+        const res = await fetch('/api/checkout/create-order', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            webinarId: 'webinar-101',
+            customerName,
+            customerEmail: 'alex.hunter@example.com',
+            productTitle,
+            amount: 197,
+            paymentMethod: currentPaymentMethod
+          })
+        });
+        const data = await res.json();
+
+        closeCheckoutModal();
+        const offerCard = document.getElementById('attendeeOfferCard');
+        if (offerCard) offerCard.style.display = 'none';
+
+        if (data.order) {
+          document.getElementById('receiptOrderId').innerText = data.order.orderId;
+          document.getElementById('receiptAmount').innerText = `$${data.order.amount}.00 ${data.order.currency}`;
+          document.getElementById('receiptLicense').innerText = 'OMNI-' + data.order.paymentId.substring(4, 14).toUpperCase();
+        }
+        document.getElementById('orderReceiptModal').style.display = 'flex';
+      } catch(err) {
+        console.warn("Checkout offline fallback:", err);
+        closeCheckoutModal();
+        document.getElementById('orderReceiptModal').style.display = 'flex';
+      } finally {
+        if (btn) {
+          btn.innerText = "Pay Now & Unlock Mastermind ($197)";
+          btn.disabled = false;
+        }
+      }
+    }
+
+    function closeReceiptModal() {
+      document.getElementById('orderReceiptModal').style.display = 'none';
+    }
+
+    // =========================================================================
+    // 5B. Registration & Calendar Integration (.ics + Google Calendar)
+    // =========================================================================
+    async function submitRegistration() {
+      const name = document.getElementById('regFullName').value.trim();
+      const email = document.getElementById('regEmailAddress').value.trim();
+      const phone = document.getElementById('regPhoneNum').value.trim();
+      const btn = document.getElementById('btnClaimSeat');
+
+      if (!name || !email) {
+        alert("Please enter your name and email address.");
+        return;
+      }
+
+      if (btn) {
+        btn.innerText = "Reserving Seat & Generating Ticket...";
+        btn.disabled = true;
+      }
+
+      try {
+        const res = await fetch('/api/register', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ firstName: name, email, phone, webinarId: 'webinar-101' })
+        });
+        const data = await res.json();
+
+        if (data.success) {
+          document.getElementById('btnAddToGCal').href = data.googleCalendarUrl;
+          document.getElementById('btnAddToIcs').href = data.icsCalendarUrl;
+          document.getElementById('regUniqueJoinLink').innerText = window.location.origin + data.joinUrl;
+          document.getElementById('regSuccessModal').style.display = 'flex';
+        }
+      } catch(e) {
+        document.getElementById('regSuccessModal').style.display = 'flex';
+      } finally {
+        if (btn) {
+          btn.innerText = "Claim Free VIP Pass & Seat";
+          btn.disabled = false;
+        }
+      }
+    }
+
+    function enterWebinarFromReg() {
+      document.getElementById('regSuccessModal').style.display = 'none';
+      switchView('attendeeRoom');
+      document.querySelectorAll('.nav-tab-btn').forEach(b => {
+        if (b.innerText.includes('Attendee')) b.classList.add('active');
+        else b.classList.remove('active');
+      });
+    }
+
+    // =========================================================================
+    // 5C. Q&A System with Upvoting & Live Answering
+    // =========================================================================
+    let qnaQuestions = [
+      {
+        id: 'qna_1',
+        authorName: 'Priya Patel',
+        question: 'How does the Panic Button migrate 1,000+ viewers in under 3 seconds without refreshing the browser?',
+        upvotes: 14,
+        isAnswered: false,
+        createdAt: '19:35'
+      },
+      {
+        id: 'qna_2',
+        authorName: 'Marcus Vance',
+        question: 'Does the Replica Replay synchronize the timed offers and poll voting graphs to the exact video millisecond?',
+        upvotes: 9,
+        isAnswered: false,
+        createdAt: '19:40'
+      }
+    ];
+    let liveAnsweringQId = null;
+
+    function renderQnALists() {
+      const hostList = document.getElementById('hostQnaList');
+      const attList = document.getElementById('attendeeQnaList');
+
+      if (hostList) {
+        hostList.innerHTML = qnaQuestions.map(q => `
+          <div class="qna-card ${liveAnsweringQId === q.id ? 'answering' : ''}">
+            <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:6px;">
+              <div>
+                <strong style="font-size:13px; color:#fff;">${q.authorName}</strong>
+                <span style="font-size:11px; color:var(--text-sub); margin-left:6px;">${q.createdAt}</span>
+              </div>
+              <span class="btn-upvote" onclick="upvoteQuestion('${q.id}')">👍 ${q.upvotes}</span>
+            </div>
+            <div style="font-size:13px; color:var(--text); line-height:1.4; margin-bottom:10px;">${q.question}</div>
+            <div style="display:flex; gap:6px;">
+              <button class="nav-tab-btn" style="padding:4px 10px; font-size:11px; background:${liveAnsweringQId === q.id ? '#a855f7' : 'var(--primary)'}; color:#fff;" onclick="answerLiveQuestion('${q.id}')">
+                ${liveAnsweringQId === q.id ? '🎙️ Answering Live...' : '🎙️ Answer Live'}
+              </button>
+              <button class="nav-tab-btn" style="padding:4px 8px; font-size:11px;" onclick="markQnAAnswered('${q.id}')">✓ Done</button>
+            </div>
+          </div>
+        `).join('');
+      }
+
+      if (attList) {
+        attList.innerHTML = qnaQuestions.map(q => `
+          <div class="qna-card ${liveAnsweringQId === q.id ? 'answering' : ''}">
+            <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:6px;">
+              <div>
+                <strong style="font-size:13px; color:#fff;">${q.authorName}</strong>
+                <span style="font-size:11px; color:var(--text-sub); margin-left:6px;">${q.createdAt}</span>
+              </div>
+              <button class="btn-upvote" onclick="upvoteQuestion('${q.id}')">👍 ${q.upvotes}</button>
+            </div>
+            <div style="font-size:13px; color:var(--text); line-height:1.4;">${q.question}</div>
+            ${liveAnsweringQId === q.id ? '<div style="margin-top:8px; font-size:11px; color:#a855f7; font-weight:700;">● Being answered on stage right now</div>' : ''}
+          </div>
+        `).join('');
+      }
+
+      const hostBadge = document.getElementById('hostQnaCountBadge');
+      if (hostBadge) hostBadge.innerText = qnaQuestions.length;
+      const attBadge = document.getElementById('attendeeQnaBadge');
+      if (attBadge) attBadge.innerText = qnaQuestions.length;
+    }
+
+    function submitAttendeeQuestion() {
+      const input = document.getElementById('attendeeQuestionInput');
+      const text = input.value.trim();
+      if (!text) return;
+
+      const q = {
+        id: 'qna_' + Date.now(),
+        authorName: 'Attendee (' + clientId.substring(7) + ')',
+        question: text,
+        upvotes: 1,
+        isAnswered: false,
+        createdAt: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+      };
+      qnaQuestions.unshift(q);
+      input.value = '';
+      renderQnALists();
+      broadcastEvent('QNA_ASK', { question: text, authorName: q.authorName });
+    }
+
+    function submitHostQuestion() {
+      const input = document.getElementById('hostAddQuestionInput');
+      const text = input.value.trim();
+      if (!text) return;
+
+      const q = {
+        id: 'qna_' + Date.now(),
+        authorName: 'Host Moderator',
+        question: text,
+        upvotes: 3,
+        isAnswered: false,
+        createdAt: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+      };
+      qnaQuestions.unshift(q);
+      input.value = '';
+      renderQnALists();
+      broadcastEvent('QNA_ASK', { question: text, authorName: q.authorName });
+    }
+
+    function upvoteQuestion(id) {
+      const q = qnaQuestions.find(item => item.id === id);
+      if (q) {
+        q.upvotes++;
+        qnaQuestions.sort((a,b) => b.upvotes - a.upvotes);
+        renderQnALists();
+        broadcastEvent('QNA_UPVOTE', { questionId: id, upvotes: q.upvotes });
+      }
+    }
+
+    function addQnAQuestionLocally(q) {
+      if (!qnaQuestions.some(item => item.id === q.id)) {
+        qnaQuestions.unshift(q);
+        renderQnALists();
+      }
+    }
+
+    function updateQnAUpvotesLocally(questionId, upvotes) {
+      const q = qnaQuestions.find(item => item.id === questionId);
+      if (q) {
+        q.upvotes = upvotes;
+        qnaQuestions.sort((a,b) => b.upvotes - a.upvotes);
+        renderQnALists();
+      }
+    }
+
+    function answerLiveQuestion(id) {
+      if (liveAnsweringQId === id) {
+        liveAnsweringQId = null;
+        dismissLiveAnswering();
+        broadcastEvent('QNA_DISMISS_LIVE', {});
+      } else {
+        liveAnsweringQId = id;
+        const q = qnaQuestions.find(item => item.id === id);
+        if (q) {
+          setLiveAnsweringBanner(q);
+          broadcastEvent('QNA_ANSWER_LIVE', { question: q });
+        }
+      }
+      renderQnALists();
+    }
+
+    function setLiveAnsweringBanner(q) {
+      const banner = document.getElementById('liveAnsweringBanner');
+      if (!banner) return;
+      if (!q) {
+        banner.style.display = 'none';
+        return;
+      }
+      document.getElementById('liveAnsweringText').innerText = `"${q.question}"`;
+      document.getElementById('liveAnsweringAuthor').innerText = `Asked by ${q.authorName} • ${q.upvotes} Upvotes`;
+      banner.style.display = 'flex';
+    }
+
+    function dismissLiveAnswering() {
+      const banner = document.getElementById('liveAnsweringBanner');
+      if (banner) banner.style.display = 'none';
+      liveAnsweringQId = null;
+      renderQnALists();
+    }
+
+    function markQnAAnswered(id) {
+      qnaQuestions = qnaQuestions.filter(q => q.id !== id);
+      if (liveAnsweringQId === id) dismissLiveAnswering();
+      renderQnALists();
+    }
+
+    // =========================================================================
+    // 5D. Raise Hand & Bring Attendee to Stage
+    // =========================================================================
+    let isHandRaised = false;
+    let raisedHandsList = [];
+    let stageSpeakersList = [];
+
+    function toggleRaiseHand() {
+      isHandRaised = !isHandRaised;
+      const btn = document.getElementById('btnRaiseHand');
+      const label = document.getElementById('raiseHandLabel');
+
+      if (isHandRaised) {
+        btn.classList.add('active');
+        label.innerText = "Hand Raised (Waiting for Host)";
+        broadcastEvent('RAISE_HAND', { attendeeId: clientId, attendeeName: 'Attendee ' + clientId.substring(7) });
+        if (!raisedHandsList.some(h => h.attendeeId === clientId)) {
+          raisedHandsList.push({ attendeeId: clientId, attendeeName: 'Attendee ' + clientId.substring(7) });
+          updateRaisedHandsUI();
+        }
+      } else {
+        btn.classList.remove('active');
+        label.innerText = "Raise Hand to Speak";
+        broadcastEvent('LOWER_HAND', { attendeeId: clientId });
+        raisedHandsList = raisedHandsList.filter(h => h.attendeeId !== clientId);
+        updateRaisedHandsUI();
+      }
+    }
+
+    function updateRaisedHandsLocally(hands) {
+      raisedHandsList = hands;
+      updateRaisedHandsUI();
+    }
+
+    function updateRaisedHandsUI() {
+      const badge = document.getElementById('hostHandsBadge');
+      const tabBadge = document.getElementById('hostHandsTabBadge');
+      const listCount = document.getElementById('hostHandsListCount');
+      const count = raisedHandsList.length;
+
+      if (badge) badge.innerText = count;
+      if (tabBadge) tabBadge.innerText = count;
+      if (listCount) listCount.innerText = count;
+
+      const queueContainer = document.getElementById('hostRaisedHandsQueue');
+      if (queueContainer) {
+        if (count === 0) {
+          queueContainer.innerHTML = `
+            <div style="font-size:12px; color:var(--text-muted); padding:10px; text-align:center; border:1px dashed var(--surface-border); border-radius:8px;">
+              No attendees currently raising their hand.
+            </div>
+          `;
+        } else {
+          queueContainer.innerHTML = raisedHandsList.map(item => `
+            <div class="qna-card" style="display:flex; justify-content:space-between; align-items:center; padding:10px 12px; margin-bottom:8px;">
+              <div>
+                <strong style="font-size:13px; color:#fff;">${item.attendeeName}</strong>
+                <div style="font-size:11px; color:#f59e0b;">✋ Hand Raised • Audio Ready</div>
+              </div>
+              <div style="display:flex; gap:6px;">
+                <button class="nav-tab-btn" style="background:#10b981; color:#fff; padding:4px 10px; font-size:11px;" onclick="inviteToStage('${item.attendeeId}', '${item.attendeeName}')">
+                  🎙️ Invite
+                </button>
+                <button class="nav-tab-btn" style="padding:4px 8px; font-size:11px;" onclick="dismissHand('${item.attendeeId}')">✕</button>
+              </div>
+            </div>
+          `).join('');
+        }
+      }
+    }
+
+    function inviteToStage(attendeeId, attendeeName) {
+      broadcastEvent('INVITE_TO_STAGE', { attendeeId, attendeeName });
+      showStageInviteModal();
+    }
+
+    function showStageInviteModal() {
+      const modal = document.getElementById('stageInviteModal');
+      if (modal) modal.style.display = 'flex';
+    }
+
+    function acceptStageInvite() {
+      const modal = document.getElementById('stageInviteModal');
+      if (modal) modal.style.display = 'none';
+
+      isHandRaised = false;
+      const btn = document.getElementById('btnRaiseHand');
+      if (btn) {
+        btn.classList.remove('active');
+        document.getElementById('raiseHandLabel').innerText = "Live on Stage (Speaking)";
+      }
+
+      broadcastEvent('ACCEPT_STAGE_INVITE', { attendeeId: clientId, attendeeName: 'Guest Speaker (' + clientId.substring(7) + ')' });
+      
+      changeLayout('grid');
+      stageSpeakersList = [{ id: clientId, name: 'Guest Speaker', role: 'guest_speaker' }];
+      renderActiveSpeakersUI();
+    }
+
+    function declineStageInvite() {
+      const modal = document.getElementById('stageInviteModal');
+      if (modal) modal.style.display = 'none';
+      if (isHandRaised) toggleRaiseHand();
+    }
+
+    function dismissHand(attendeeId) {
+      raisedHandsList = raisedHandsList.filter(h => h.attendeeId !== attendeeId);
+      updateRaisedHandsUI();
+      broadcastEvent('LOWER_HAND', { attendeeId });
+    }
+
+    function removeFromStage(speakerId) {
+      stageSpeakersList = stageSpeakersList.filter(s => s.id !== speakerId);
+      changeLayout('solo');
+      renderActiveSpeakersUI();
+      broadcastEvent('REMOVE_FROM_STAGE', { speakerId });
+    }
+
+    function updateStageSpeakersLocally(speakers) {
+      stageSpeakersList = speakers;
+      if (stageSpeakersList.length > 0) {
+        changeLayout('grid');
+      }
+      renderActiveSpeakersUI();
+    }
+
+    function renderActiveSpeakersUI() {
+      const container = document.getElementById('hostGuestSpeakersContainer');
+      if (!container) return;
+      if (stageSpeakersList.length === 0) {
+        container.innerHTML = '';
+      } else {
+        container.innerHTML = stageSpeakersList.map(sp => `
+          <div class="qna-card" style="display:flex; justify-content:space-between; align-items:center; padding:10px 12px; margin-bottom:8px; border-color:rgba(16,185,129,0.3);">
+            <div>
+              <div style="font-weight:700; font-size:13px; color:#fff;">${sp.name}</div>
+              <div style="font-size:11px; color:#34d399;">Active on Stage • Live Mic</div>
+            </div>
+            <button class="nav-tab-btn" style="background:rgba(239,68,68,0.2); color:#ef4444; padding:4px 8px; font-size:11px;" onclick="removeFromStage('${sp.id}')">
+              Remove
+            </button>
+          </div>
+        `).join('');
+      }
+    }
+
+    // =========================================================================
+    // 5E. Slide Deck Presentation Controller
+    // =========================================================================
+    let currentStageSource = 'camera';
+    let currentSlideIndex = 0;
+    const slidesData = [
+      {
+        title: "Slide 1: High-Ticket Automation Architecture",
+        subtitle: "How to Build a $50k/mo AI Operation with Zero Manual Coding",
+        notes: "Talking Point: Welcome attendees, set expectation for the 45-minute sprint, mention the $197 live bonus deal.",
+        points: [
+          "Enterprise LiveKit WebRTC SFU sub-second streaming",
+          "Automated PostgreSQL + Redis distributed synchronization",
+          "One-Click Panic Button disaster recovery (< 3 seconds failover)"
+        ]
+      },
+      {
+        title: "Slide 2: The 3 Core Pillars of Webinar Scaling",
+        subtitle: "Eliminating Technical Failure Points for High Concurrency",
+        notes: "Highlight the difference between standard Zoom lag and sub-second JamCast low latency.",
+        points: [
+          "Pillar 1: Sub-second audio/video glass-to-glass latency",
+          "Pillar 2: Instant timed scarcity offers with real-time conversion counters",
+          "Pillar 3: Autonomous AI Co-Host for answering pricing & objections"
+        ]
+      },
+      {
+        title: "Slide 3: Real-Time WebRTC vs Standard HLS",
+        subtitle: "Why 15-Second Latency Kills Offer Conversions",
+        notes: "Point to the latency graph. When attendees ask questions in chat, a 15-second delay breaks engagement.",
+        points: [
+          "Standard HLS CDN: 12-18 seconds delay (Chat out of sync)",
+          "OmniWebinar JamCast: 300ms WebRTC (Direct real-time engagement)",
+          "Synchronized Offer Countdown: Every viewer sees the countdown at the exact same millisecond"
+        ]
+      },
+      {
+        title: "Slide 4: Case Study: 1,482 Live Attendees",
+        subtitle: "From Free Registration to $82,400 in Same-Day Sales",
+        notes: "Walk through the funnel analytics curve on the Replay tab.",
+        points: [
+          "Registration Rate: 64% on high-converting landing page",
+          "Live Attendance Rate: 48% with WhatsApp 15m countdown blasts",
+          "Offer Conversion: 28.4% with scarcity units badge ($197 offer)"
+        ]
+      },
+      {
+        title: "Slide 5: Autonomous Gemini 2.5 Flash Co-Host",
+        subtitle: "Automated Objection Handling & Live Q&A Triaging",
+        notes: "Demonstrate asking the AI co-host a question in chat. It responds in < 300ms.",
+        points: [
+          "Automatic objection detection (Refunds, Replay, Pricing, Prerequisites)",
+          "Context-aware vector knowledge base of your curriculum",
+          "Zero host distraction: Focus 100% on delivering the presentation"
+        ]
+      },
+      {
+        title: "Slide 6: Special Live Masterclass Deal ($197)",
+        subtitle: "Full Enterprise License + 6 Fast-Action VIP Bonuses",
+        notes: "Click 'Launch Live Offer To All Attendees' now! Countdown is set to 5 minutes.",
+        points: [
+          "Complete OmniWebinar Pro Enterprise Source Code",
+          "Docker Compose & LiveKit SFU Production Configurations",
+          "Lifetime Access to Weekly Private Masterminds + 30-Day Guarantee"
+        ]
+      }
+    ];
+
+    function setStageSource(source) {
+      currentStageSource = source;
+      ['btnSourceCam', 'btnSourceSlides', 'btnSourceScreen'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.classList.remove('active');
+      });
+
+      const dock = document.getElementById('slideDock');
+
+      if (source === 'camera') {
+        document.getElementById('btnSourceCam').classList.add('active');
+        if (dock) dock.style.display = 'none';
+        currentLayout = 'solo';
+      } else if (source === 'slides') {
+        document.getElementById('btnSourceSlides').classList.add('active');
+        if (dock) dock.style.display = 'flex';
+        currentLayout = 'pip';
+        updateSlideUI();
+        broadcastEvent('SLIDE_CHANGE', { slideNumber: currentSlideIndex + 1 });
+      } else if (source === 'screen') {
+        document.getElementById('btnSourceScreen').classList.add('active');
+        if (dock) dock.style.display = 'none';
+        toggleScreenShare();
+      }
+    }
+
+    function nextSlide() {
+      if (currentSlideIndex < slidesData.length - 1) {
+        currentSlideIndex++;
+        updateSlideUI();
+        broadcastEvent('SLIDE_CHANGE', { slideNumber: currentSlideIndex + 1 });
+      }
+    }
+
+    function prevSlide() {
+      if (currentSlideIndex > 0) {
+        currentSlideIndex--;
+        updateSlideUI();
+        broadcastEvent('SLIDE_CHANGE', { slideNumber: currentSlideIndex + 1 });
+      }
+    }
+
+    function updateSlideUI() {
+      const slide = slidesData[currentSlideIndex];
+      const counter = document.getElementById('slideCounterText');
+      const title = document.getElementById('slideTopicTitle');
+      const notes = document.getElementById('slideSpeakerNotes');
+
+      if (counter) counter.innerText = `Slide ${currentSlideIndex + 1} of ${slidesData.length}`;
+      if (title) title.innerText = slide.title;
+      if (notes) notes.innerText = `(Notes: ${slide.notes})`;
+    }
+
+    function setSlideLocally(num) {
+      if (num >= 1 && num <= slidesData.length) {
+        currentSlideIndex = num - 1;
+        currentStageSource = 'slides';
+        currentLayout = 'pip';
+        updateSlideUI();
+      }
+    }
+
+    function toggleWhiteboardOnSlide() {
+      toggleDrawing();
+    }
+
+    // =========================================================================
+    // 5F. Evergreen Automated Webinar Engine (EverWebinar Mode)
+    // =========================================================================
+    let isEvergreenMode = false;
+    let evergreenTimer = null;
+    let evergreenTick = 0;
+
+    function toggleEvergreenMode() {
+      isEvergreenMode = !isEvergreenMode;
+      const btn = document.getElementById('modeSwitcherLabel');
+      if (btn) {
+        btn.innerText = isEvergreenMode ? "Mode: Evergreen (Auto-Simulated)" : "Mode: Live Broadcast";
+      }
+
+      if (isEvergreenMode) {
+        evergreenTick = 0;
+        appendChatMessage("System Co-Host", "🔄 Evergreen Automated Masterclass started. Real-time simulated attendance active.", false);
+        evergreenTimer = setInterval(() => {
+          evergreenTick += 5;
+          if (evergreenTick === 10) {
+            appendChatMessage("Liam K.", "The architecture diagram makes total sense. Love the sub-second SFU.", false);
+          } else if (evergreenTick === 20) {
+            appendChatMessage("Chloe Chen", "Does this also support automated replay tracking?", false);
+          } else if (evergreenTick === 30) {
+            handlePollReceived({
+              question: "What is your primary webinar objective for this quarter?",
+              opts: ["Scale High-Ticket Consulting", "Launch SaaS Onboarding", "Sell Digital Products"]
+            });
+          } else if (evergreenTick === 45) {
+            handleOfferReceived({
+              title: "AI Automation Agency Accelerator",
+              regPrice: "$997",
+              salePrice: "$197",
+              duration: 300,
+              units: 7
+            });
+          }
+        }, 5000);
+      } else {
+        if (evergreenTimer) clearInterval(evergreenTimer);
+        appendChatMessage("System Co-Host", "Switched back to Live Broadcast Studio Mode.", false);
+      }
+    }
+
+    // =========================================================================
+    // 6. Live Polls Module
+    // =========================================================================
+    function launchLivePoll() {
+      const question = document.getElementById('pollQuestionInput').value;
+      const opts = [
+        document.getElementById('pollOpt1').value,
+        document.getElementById('pollOpt2').value,
+        document.getElementById('pollOpt3').value
+      ];
+
+      const payload = { question, opts };
+      syncChannel.postMessage({ type: 'POLL_LAUNCHED', payload });
+      handlePollReceived(payload);
+      alert("📊 Poll launched on attendees' screens!");
+    }
+
+    function handlePollReceived(payload) {
+      const card = document.getElementById('attendeePollCard');
+      document.getElementById('attendeePollQuestion').innerText = payload.question;
+      
+      const container = document.getElementById('pollOptionsContainer');
+      container.innerHTML = '';
+
+      payload.opts.forEach((opt, idx) => {
+        const btn = document.createElement('button');
+        btn.className = 'poll-opt-btn';
+        btn.innerText = opt;
+        btn.onclick = () => votePollOption(idx, payload.opts);
+        container.appendChild(btn);
+      });
+
+      card.style.display = 'block';
+    }
+
+    function votePollOption(selectedIdx, opts) {
+      const container = document.getElementById('pollOptionsContainer');
+      container.innerHTML = '';
+
+      // Render animated percentage result bars
+      opts.forEach((opt, idx) => {
+        const pct = (idx === selectedIdx) ? 68 : (idx === 0 ? 18 : 14);
+        const div = document.createElement('div');
+        div.style.margin = '8px 0';
+        div.innerHTML = `
+          <div style="display:flex; justify-content:space-between; font-size:12px; margin-bottom:4px;">
+            <span>${opt} ${idx === selectedIdx ? '✓ (Your Vote)' : ''}</span>
+            <span style="font-weight:700;">${pct}%</span>
+          </div>
+          <div style="width:100%; height:8px; background:rgba(255,255,255,0.1); border-radius:4px; overflow:hidden;">
+            <div style="height:100%; width:${pct}%; background:${idx === selectedIdx ? '#10b981' : 'var(--primary)'}; border-radius:4px;"></div>
+          </div>
+        `;
+        container.appendChild(div);
+      });
+
+      setTimeout(() => {
+        document.getElementById('attendeePollCard').style.display = 'none';
+      }, 7000);
+    }
+
+    // =========================================================================
+    // 7. Handouts Module
+    // =========================================================================
+    function pushHandoutToAttendees() {
+      const title = document.getElementById('handoutTitle').value;
+      syncChannel.postMessage({ type: 'HANDOUT_PUSHED', payload: { title } });
+      alert("📥 Handout pushed to attendees!");
+    }
+
+    function handleHandoutReceived(payload) {
+      appendChatMessage("System Notice", `📥 New Handout shared by Host: "${payload.title}" (Check Handouts tab to download)`, false);
+    }
+
+    // =========================================================================
+    // 8. Live Chat & Floating Reactions
+    // =========================================================================
+    function sendHostChat() {
+      const input = document.getElementById('hostChatInput');
+      const text = input.value.trim();
+      if (!text) return;
+
+      appendChatMessage("Host (You)", text, true);
+      syncChannel.postMessage({ type: 'CHAT_MESSAGE', payload: { sender: "Host (Verified)", text, isHost: true } });
+      input.value = '';
+    }
+
+    function sendAttendeeChat() {
+      const input = document.getElementById('attendeeChatInput');
+      const text = input.value.trim();
+      if (!text) return;
+
+      appendChatMessage("You (Attendee)", text, false);
+      syncChannel.postMessage({ type: 'CHAT_MESSAGE', payload: { sender: "Attendee", text, isHost: false } });
+      input.value = '';
+    }
+
+    function appendChatMessage(sender, text, isHost) {
+      const hostBox = document.getElementById('hostChatBox');
+      const attendeeBox = document.getElementById('attendeeChatBox');
+
+      const msgEl = document.createElement('div');
+      msgEl.className = `chat-msg ${isHost ? 'host-msg' : ''}`;
+      msgEl.innerHTML = `
+        <div class="sender-line">
+          <span>${sender}</span>
+          <span>Just now</span>
+        </div>
+        <div>${text}</div>
+      `;
+
+      if (hostBox) {
+        hostBox.appendChild(msgEl.cloneNode(true));
+        hostBox.scrollTop = hostBox.scrollHeight;
+      }
+      if (attendeeBox) {
+        attendeeBox.appendChild(msgEl);
+        attendeeBox.scrollTop = attendeeBox.scrollHeight;
+      }
+    }
+
+    function emitReaction(emoji) {
+      renderFloatingEmoji(emoji);
+      syncChannel.postMessage({ type: 'REACTION', payload: { emoji } });
+    }
+
+    function renderFloatingEmoji(emoji) {
+      const stage = document.querySelector('.attendee-stage-card');
+      if (!stage) return;
+      const el = document.createElement('div');
+      el.className = 'floating-emoji';
+      el.innerText = emoji;
+      el.style.right = (30 + Math.random() * 80) + 'px';
+      stage.appendChild(el);
+      setTimeout(() => el.remove(), 2400);
+    }
+
+    // =========================================================================
+    // 9. Timeline Scrubber for Replica Replay
+    // =========================================================================
+    function scrubTimeline(e) {
+      const track = document.getElementById('timelineTrack');
+      const rect = track.getBoundingClientRect();
+      const pct = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
+      document.getElementById('timelineProgress').style.width = (pct * 100) + '%';
+      
+      const totalSec = 3600;
+      const curSec = Math.floor(totalSec * pct);
+      const mins = String(Math.floor(curSec / 60)).padStart(2, '0');
+      const secs = String(curSec % 60).padStart(2, '0');
+      document.getElementById('scrubberTime').innerText = `${mins}:${secs} / 60:00`;
+    }
+
+    // =========================================================================
+    // 10. Email Marketing & Dynamic Automation Engine
+    // =========================================================================
+    function switchEmailSubTab(subTabId) {
+      document.querySelectorAll('.email-subtab-content').forEach(el => el.style.display = 'none');
+      const target = document.getElementById(subTabId);
+      if (target) target.style.display = 'block';
+
+      // Highlight active button
+      event.currentTarget.parentElement.querySelectorAll('.nav-tab-btn').forEach(btn => btn.classList.remove('active'));
+      event.currentTarget.classList.add('active');
+
+      if (subTabId === 'emailEditor') {
+        updateLiveEmailPreview();
+      }
+    }
+
+    const emailTemplatesData = {
+      CONFIRMATION: {
+        subject: "Confirmed! Your VIP Seat for {WEBINAR_TITLE} is Locked In 🎟️",
+        preheader: "Here is your 1-click access link for the live event...",
+        customText: "We have prepared an extraordinary presentation covering high-conversion funnel architecture and zero-downtime streaming.",
+        badge: "You're Registered! 🎉",
+        ctaText: "👉 Enter Your Live Webinar Room",
+        btnColor: "#6366f1"
+      },
+      REMINDER_15M: {
+        subject: "🚨 [STARTING NOW] Doors are Opening for {WEBINAR_TITLE}!",
+        preheader: "The broadcast room is open right now! Grab your seat...",
+        customText: "The stage is live and Dr. Vance is about to start the opening slides. We recommend joining right away before the room reaches limit capacity.",
+        badge: "🚨 LIVE IN 15 MINUTES",
+        ctaText: "⚡ Join Live Broadcast Stage Now",
+        btnColor: "#ef4444"
+      },
+      POST_ATTENDED: {
+        subject: "Special Masterclass Deal Closing Tonight: {OFFER_PRICE} Expiring ⏳",
+        preheader: "Exclusive attendee bonuses and recording access expires at midnight...",
+        customText: "Thank you for staying through today's masterclass! As promised on the call, your fast-action attendee bundle is active for a strictly limited window.",
+        badge: "Exclusive Attendee Deal 🔥",
+        ctaText: "⚡ Claim Your Special $197 Discount",
+        btnColor: "#10b981"
+      },
+      POST_NO_SHOW: {
+        subject: "You missed {WEBINAR_TITLE}! Here is the 24-hour Replica Replay 📼",
+        preheader: "Watch the full recording with synchronized live questions & poll responses...",
+        customText: "We missed you on today's live session! Our Replica Replay engine has saved the complete stream with all live questions, polls, and resources intact.",
+        badge: "24-Hour Replica Replay 📼",
+        ctaText: "▶️ Watch Full Replica Replay",
+        btnColor: "#6366f1"
+      }
+    };
+
+    function loadSelectedEmailTemplate() {
+      const selectedKey = document.getElementById('emailTemplateSelect').value;
+      const tpl = emailTemplatesData[selectedKey];
+      if (!tpl) return;
+
+      document.getElementById('emailSubjectInput').value = tpl.subject;
+      document.getElementById('emailPreheaderInput').value = tpl.preheader;
+      document.getElementById('emailBodyCustomText').value = tpl.customText;
+
+      updateLiveEmailPreview();
+    }
+
+    function updateLiveEmailPreview() {
+      const selectedKey = document.getElementById('emailTemplateSelect').value;
+      const tpl = emailTemplatesData[selectedKey] || emailTemplatesData.CONFIRMATION;
+
+      let subject = document.getElementById('emailSubjectInput').value;
+      let customText = document.getElementById('emailBodyCustomText').value;
+
+      // Replace merge tags for simulation
+      const mockData = {
+        '{FIRST_NAME}': 'John',
+        '{WEBINAR_TITLE}': 'Scale Live Webinars to 10k Viewers',
+        '{DATE_TIME}': 'Thursday, Oct 15 at 8:00 PM EST',
+        '{UNIQUE_JOIN_LINK}': 'https://omniwebinar.io/w/live?token=usr_99a8b7c6',
+        '{REPLAY_LINK}': 'https://omniwebinar.io/w/replay?token=usr_99a8b7c6',
+        '{OFFER_PRICE}': '$197 (Save $800)'
+      };
+
+      for (const [tag, val] of Object.entries(mockData)) {
+        subject = subject.replaceAll(tag, val);
+        customText = customText.replaceAll(tag, val);
+      }
+
+      document.getElementById('previewSubjectText').innerText = subject;
+
+      // Generate HTML Body
+      const previewContainer = document.getElementById('previewHtmlBody');
+      previewContainer.innerHTML = `
+        <div style="background:linear-gradient(135deg, ${tpl.btnColor}, #1e1b4b); padding:24px; border-radius:10px; color:#ffffff; text-align:center; margin-bottom:20px;">
+          <h2 style="margin:0; font-size:20px; font-weight:800;">${tpl.badge}</h2>
+          <p style="margin-top:6px; font-size:13px; opacity:0.9;">Event: Scale Live Webinars to 10k Viewers</p>
+        </div>
+
+        <p style="margin-bottom:12px;">Hi <strong>John</strong>,</p>
+        <p style="color:#475569; line-height:1.6; margin-bottom:16px;">${customText}</p>
+
+        <div style="background:#f8fafc; border-left:4px solid ${tpl.btnColor}; padding:14px; margin:18px 0; border-radius:6px; font-size:13px; color:#64748b;">
+          <div>📅 <strong>Date:</strong> Thursday, Oct 15 at 8:00 PM EST</div>
+          <div style="margin-top:4px;">⚡ <strong>Format:</strong> Ultra-Low Latency Live HD Stream</div>
+          <div style="margin-top:4px;">👤 <strong>Host:</strong> Dr. Robert Vance</div>
+        </div>
+
+        <div style="text-align:center; margin:28px 0;">
+          <a href="#" style="background:${tpl.btnColor}; color:#ffffff; padding:12px 24px; border-radius:8px; text-decoration:none; font-weight:700; font-size:15px; display:inline-block; box-shadow:0 4px 14px rgba(0,0,0,0.15);">
+            ${tpl.ctaText}
+          </a>
+        </div>
+
+        <div style="text-align:center; font-size:11.5px; color:#94a3b8; border-top:1px solid #f1f5f9; padding-top:14px;">
+          <div>Your private 1-click token: <code>https://omniwebinar.io/w/live?token=usr_99a8b7c6</code></div>
+          <div style="margin-top:4px;">Add to <a href="#" style="color:${tpl.btnColor};">Google Calendar</a> | <a href="#" style="color:${tpl.btnColor};">Apple Calendar (.ics)</a></div>
+        </div>
+      `;
+    }
+
+    function insertMergeTag(tag) {
+      const textarea = document.getElementById('emailBodyCustomText');
+      textarea.value += ' ' + tag;
+      updateLiveEmailPreview();
+    }
+
+    function toggleEmailPreviewDevice(device) {
+      const container = document.getElementById('emailPreviewContainer');
+      const btnDesk = document.getElementById('btnPreviewDesktop');
+      const btnMob = document.getElementById('btnPreviewMobile');
+
+      if (device === 'mobile') {
+        container.style.maxWidth = '375px';
+        container.style.borderRadius = '32px';
+        container.style.border = '8px solid #334155';
+        btnMob.classList.add('active');
+        btnDesk.classList.remove('active');
+      } else {
+        container.style.maxWidth = '650px';
+        container.style.borderRadius = '12px';
+        container.style.border = '1px solid rgba(0,0,0,0.1)';
+        btnDesk.classList.add('active');
+        btnMob.classList.remove('active');
+      }
+    }
+
+    function sendTestEmailSimulation() {
+      const subject = document.getElementById('previewSubjectText').innerText;
+      alert(`📨 Test Email Dispatched Successfully!\n\nTo: host@omniwebinar.io\nSubject: ${subject}\n\nVia: AWS SES Warm IP Pool (Latency: 180ms)`);
+    }
+
+    function triggerBroadcastBlast() {
+      const segment = document.getElementById('broadcastSegment').value;
+      const subject = document.getElementById('broadcastSubject').value;
+      
+      alert(`🚀 Broadcast Blast Queued!\n\nTarget: ${segment}\nSubject: "${subject}"\n\nBullMQ Queue ID: job_blast_${Date.now()}\nStatus: Dispatching across 10 concurrent worker threads...`);
+    }
+
+    // =========================================================================
+    // 11. Growth Hub: WhatsApp, AI Co-Host, and Spin-The-Wheel
+    // =========================================================================
+    function switchGrowthSubTab(subTabId) {
+      document.querySelectorAll('.growth-subtab-content').forEach(el => el.style.display = 'none');
+      const target = document.getElementById(subTabId);
+      if (target) target.style.display = 'block';
+
+      // Highlight active button
+      event.currentTarget.parentElement.querySelectorAll('.nav-tab-btn').forEach(btn => btn.classList.remove('active'));
+      event.currentTarget.classList.add('active');
+
+      if (subTabId === 'gamifyTab') {
+        drawLuckyWheel(0);
+      }
+    }
+
+    function simulateWhatsAppBlast() {
+      alert(`📲 WhatsApp Blast Dispatched!\n\nTarget: All 1,482 Registrants\nTemplate: "waba_urgent_live_doors_open"\nProvider: Meta WhatsApp Cloud API\n\nSent: 1,482\nDelivered: 1,478 (99.7%)\nReal-time read receipts streaming into dashboard...`);
+    }
+
+    // AI Co-Host Chat Simulation
+    function testAiCoHostQuestion() {
+      const input = document.getElementById('aiTestInput');
+      const question = input.value.trim();
+      if (!question) return;
+
+      const log = document.getElementById('aiTestChatLog');
+
+      // User question
+      const userDiv = document.createElement('div');
+      userDiv.style.background = 'rgba(255,255,255,0.04)';
+      userDiv.style.padding = '8px 12px';
+      userDiv.style.borderRadius = '8px';
+      userDiv.style.fontSize = '12.5px';
+      userDiv.style.marginBottom = '8px';
+      userDiv.innerHTML = `<strong>Attendee:</strong> ${question}`;
+      log.appendChild(userDiv);
+      input.value = '';
+
+      // AI Response with simulated typing delay
+      setTimeout(() => {
+        let answer = "Hi! Thanks for asking. Dr. Vance will cover that in depth in just a moment, and our team is sending the full workbook directly to your registered email & WhatsApp!";
+        const qLower = question.toLowerCase();
+        
+        if (qLower.includes('price') || qLower.includes('cost') || qLower.includes('discount')) {
+          answer = "The exclusive live webinar deal is $197 (discounted from $997) and includes all fast-action bonuses. It expires tonight at midnight!";
+        } else if (qLower.includes('replay') || qLower.includes('recording')) {
+          answer = "Yes! Our Replica Replay Engine has recorded the entire live session with all polls and chat. It will be emailed to you for 24 hours of free access.";
+        } else if (qLower.includes('refund') || qLower.includes('guarantee')) {
+          answer = "Every purchase is protected by an unconditional 30-Day 100% Money-Back Guarantee. No questions asked.";
+        } else if (qLower.includes('slides') || qLower.includes('pdf')) {
+          answer = "You can download the presentation slides directly from the Handouts tab on your screen right now!";
+        }
+
+        const aiDiv = document.createElement('div');
+        aiDiv.style.background = 'rgba(99,102,241,0.15)';
+        aiDiv.style.borderLeft = '3px solid var(--primary)';
+        aiDiv.style.padding = '8px 12px';
+        aiDiv.style.borderRadius = '8px';
+        aiDiv.style.fontSize = '12.5px';
+        aiDiv.style.marginBottom = '8px';
+        aiDiv.innerHTML = `<strong>🤖 AI Co-Host:</strong> ${answer}`;
+        log.appendChild(aiDiv);
+        log.scrollTop = log.scrollHeight;
+      }, 350);
+    }
+
+    // Spin-The-Wheel Canvas Simulation
+    const wheelPrizes = [
+      "🎟️ Free VIP Pass",
+      "💰 50% Off Voucher",
+      "📞 1-on-1 Call",
+      "🎁 Mastermind Swag",
+      "📚 Free E-Book",
+      "💎 Secret Gift",
+      "⚡ Bonus Module",
+      "🌟 VIP Coaching"
+    ];
+    const wheelColors = ["#6366f1", "#ec4899", "#10b981", "#f59e0b", "#8b5cf6", "#06b6d4", "#ef4444", "#3b82f6"];
+    let currentWheelAngle = 0;
+
+    function drawLuckyWheel(angle) {
+      const canvas = document.getElementById('wheelCanvas');
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+      const cx = canvas.width / 2;
+      const cy = canvas.height / 2;
+      const r = canvas.width / 2 - 10;
+      const arc = (Math.PI * 2) / wheelPrizes.length;
+
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      for (let i = 0; i < wheelPrizes.length; i++) {
+        const segAngle = angle + i * arc;
+        ctx.beginPath();
+        ctx.fillStyle = wheelColors[i];
+        ctx.moveTo(cx, cy);
+        ctx.arc(cx, cy, r, segAngle, segAngle + arc);
+        ctx.lineTo(cx, cy);
+        ctx.fill();
+        ctx.strokeStyle = '#ffffff';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+
+        // Text
+        ctx.save();
+        ctx.translate(cx, cy);
+        ctx.rotate(segAngle + arc / 2);
+        ctx.textAlign = 'right';
+        ctx.fillStyle = '#ffffff';
+        ctx.font = 'bold 12px "Plus Jakarta Sans"';
+        ctx.fillText(wheelPrizes[i], r - 20, 4);
+        ctx.restore();
+      }
+
+      // Center Pin
+      ctx.beginPath();
+      ctx.arc(cx, cy, 22, 0, Math.PI * 2);
+      ctx.fillStyle = '#ffffff';
+      ctx.fill();
+      ctx.strokeStyle = '#0f172a';
+      ctx.lineWidth = 4;
+      ctx.stroke();
+
+      // Pointer Triangle
+      ctx.beginPath();
+      ctx.moveTo(cx + r + 5, cy);
+      ctx.lineTo(cx + r - 15, cy - 10);
+      ctx.lineTo(cx + r - 15, cy + 10);
+      ctx.fillStyle = '#ffffff';
+      ctx.fill();
+    }
+
+    let isSpinning = false;
+    function spinLuckyWheel() {
+      if (isSpinning) return;
+      isSpinning = true;
+
+      const totalSpins = 5 + Math.random() * 5;
+      const targetAngle = currentWheelAngle + totalSpins * Math.PI * 2;
+      const duration = 4000;
+      const startTime = performance.now();
+
+      function animateWheel(now) {
+        const elapsed = now - startTime;
+        const progress = Math.min(1, elapsed / duration);
+        // Ease-out cubic
+        const easeOut = 1 - Math.pow(1 - progress, 3);
+        const curAngle = currentWheelAngle + (targetAngle - currentWheelAngle) * easeOut;
+
+        drawLuckyWheel(curAngle);
+
+        if (progress < 1) {
+          requestAnimationFrame(animateWheel);
+        } else {
+          isSpinning = false;
+          currentWheelAngle = curAngle % (Math.PI * 2);
+          const winningIdx = Math.floor(Math.random() * wheelPrizes.length);
+          const prize = wheelPrizes[winningIdx];
+          alert(`🎉 WINNER SELECTED ON ALL 1,482 SCREENS!\n\nPrize: ${prize}\nWinner: Rahul Sharma (rahul****@gmail.com)\n\nBroadcasted to all live attendees!`);
+        }
+      }
+
+      requestAnimationFrame(animateWheel);
+    }
+
+    // Initialize preview and real-time state on page load
+    setTimeout(() => {
+      updateLiveEmailPreview();
+      drawLuckyWheel(0);
+      renderQnALists();
+      updateRaisedHandsUI();
+
+      // Auto-route based on URL params (e.g. attendee join links)
+      const urlParams = new URLSearchParams(window.location.search);
+      if (urlParams.get('view') === 'attendeeRoom' || urlParams.get('token')) {
+        switchView('attendeeRoom');
+        document.querySelectorAll('.nav-tab-btn').forEach(b => {
+          if (b.innerText.includes('Attendee')) b.classList.add('active');
+          else b.classList.remove('active');
+        });
+      }
+    }, 200);
+  </script>
+</body>
+</html>

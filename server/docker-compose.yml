@@ -1,0 +1,65 @@
+version: '3.8'
+
+services:
+  # 1. LiveKit WebRTC SFU Server
+  livekit:
+    image: livekit/livekit-server:v1.6
+    container_name: webinar_livekit
+    restart: unless-stopped
+    command: --config /etc/livekit.yaml
+    volumes:
+      - ./livekit.yaml:/etc/livekit.yaml:ro
+    ports:
+      - "7880:7880"         # HTTP / Signaling / WebSocket API
+      - "7881:7881"         # TCP RTC Traffic fallback
+      - "7882:7882/udp"     # UDP RTC Traffic
+      - "50000-50200:50000-50200/udp" # WebRTC media ports
+    environment:
+      - LIVEKIT_KEYS=devkey:secret_master_key_webinarjam_2026
+    depends_on:
+      - redis
+
+  # 2. Redis for Real-time Pub/Sub, Room State, & Session Locking
+  redis:
+    image: redis:7.2-alpine
+    container_name: webinar_redis
+    restart: unless-stopped
+    command: redis-server --save 60 1 --loglevel warning --requirepass redis_secret_pass
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+
+  # 3. PostgreSQL Database
+  postgres:
+    image: postgres:16-alpine
+    container_name: webinar_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: webinar_db
+      POSTGRES_USER: webinar_admin
+      POSTGRES_PASSWORD: webinar_secure_password_99
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./schema.sql:/docker-entrypoint-initdb.d/init.sql:ro
+
+  # 4. Centrifugo Real-Time WebSocket Server (100k+ Concurrency)
+  centrifugo:
+    image: centrifugo/centrifugo:v5
+    container_name: webinar_centrifugo
+    restart: unless-stopped
+    command: centrifugo --config /centrifugo.json
+    volumes:
+      - ./centrifugo.json:/centrifugo.json:ro
+    ports:
+      - "8000:8000"
+    environment:
+      - CENTRIFUGO_SECRET=centrifugo_super_secret_token_123
+    depends_on:
+      - redis
+
+volumes:
+  redis_data:
+  postgres_data:

@@ -1,0 +1,20 @@
+{
+  "token_hmac_secret_key": "centrifugo_super_secret_token_123",
+  "admin_password": "admin_webinar_password",
+  "admin_secret": "admin_secret_key",
+  "api_key": "api_secret_key_webinar",
+  "redis_address": "redis:6379",
+  "redis_password": "redis_secret_pass",
+  "namespaces": [
+    {
+      "name": "webinar",
+      "presence": true,
+      "join_leave": true,
+      "history_size": 100,
+      "history_ttl": "86400s",
+      "force_push_join_leave": true,
+      "allow_publish_for_subscriber": true,
+      "allow_subscribe_for_client": true
+    }
+  ]
+}
