@@ -179,18 +179,6 @@ function initDb() {
     insertTpl.run('tpl_3', 'webinar-101', 'REPLAY_OFFER', '⚡ Replay & Limited Time $197 Bundle', 'Missed the live broadcast? Catch the full interactive replay and claim your bonuses before midnight.');
   }
 
-  // Seed initial affiliates if empty
-  const affiliateCount = db.prepare('SELECT count(*) as c FROM affiliates').get().c;
-  if (affiliateCount === 0) {
-    const insertAff = db.prepare(`
-      INSERT INTO affiliates (id, name, code, clicks, registrations, sales_count, commission_amount, payout_status)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-    `);
-    insertAff.run('aff_1', 'Rahul Sharma (Tech Lead)', 'rahul_tech', 1420, 280, 22, 1300.20, 'PAID');
-    insertAff.run('aff_2', 'Growth Media Agency', 'growth_agency', 2140, 420, 34, 2009.40, 'PAID');
-    insertAff.run('aff_3', 'Priya Patel Coaching', 'priya_vip', 890, 195, 16, 945.60, 'PENDING');
-  }
-
   // Seed initial handouts if empty
   const handoutCount = db.prepare('SELECT count(*) as c FROM handouts').get().c;
   if (handoutCount === 0) {

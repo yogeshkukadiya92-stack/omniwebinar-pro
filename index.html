@@ -1553,9 +1553,9 @@
           <h3 style="font-size:22px; font-weight:800; margin-bottom:8px;">Reserve Your Free Seat Now</h3>
           <p style="font-size:13px; color:var(--text-muted); margin-bottom:24px;">Instant confirmation + SMS reminders sent automatically.</p>
 
-          <input type="text" id="regFullName" class="input-field" placeholder="Full Name (e.g. Alex Hunter)" value="Alex Hunter" style="padding:12px; margin-bottom:12px;" />
-          <input type="email" id="regEmailAddress" class="input-field" placeholder="Email Address (Work or Personal)" value="alex.hunter@example.com" style="padding:12px; margin-bottom:12px;" />
-          <input type="tel" id="regPhoneNum" class="input-field" placeholder="WhatsApp / Phone Number for SMS Alert" value="+1 (555) 234-5678" style="padding:12px; margin-bottom:20px;" />
+          <input type="text" id="regFullName" class="input-field" placeholder="Full Name" style="padding:12px; margin-bottom:12px;" />
+          <input type="email" id="regEmailAddress" class="input-field" placeholder="Email Address (Work or Personal)" style="padding:12px; margin-bottom:12px;" />
+          <input type="tel" id="regPhoneNum" class="input-field" placeholder="WhatsApp / Phone Number for SMS Alert" style="padding:12px; margin-bottom:20px;" />
 
           <button class="btn-action-primary" id="btnClaimSeat" style="padding:14px; font-size:15px;" onclick="submitRegistration()">
             Claim Free VIP Pass & Seat
@@ -2420,10 +2420,10 @@ The Webinar Team</textarea>
 
       <div id="paymentFieldsCard">
         <label style="font-size:11px; font-weight:700; color:var(--text-sub);">NAME ON CARD</label>
-        <input type="text" id="payCardName" class="input-field" value="Alex Hunter" />
+        <input type="text" id="payCardName" class="input-field" placeholder="Full Name on Card" />
 
         <label style="font-size:11px; font-weight:700; color:var(--text-sub);">CARD DETAILS</label>
-        <input type="text" id="payCardDetails" class="input-field" value="•••• •••• •••• 4242   |   12/28   |   CVC 987" />
+        <input type="text" id="payCardDetails" class="input-field" placeholder="•••• •••• •••• ••••   |   MM/YY   |   CVC" />
       </div>
 
       <div id="paymentFieldsUpi" style="display:none; text-align:center; padding:10px 0;">
@@ -3091,6 +3091,10 @@ The Webinar Team</textarea>
     function claimOfferModal() {
       document.getElementById('modalProductTitle').innerText = document.getElementById('attendeeOfferTitle').innerText;
       document.getElementById('modalProductPrice').innerText = document.getElementById('attendeeSalePrice').innerText;
+      if (window.registeredUser && window.registeredUser.name) {
+        const cardNameInput = document.getElementById('payCardName');
+        if (cardNameInput && !cardNameInput.value) cardNameInput.value = window.registeredUser.name;
+      }
       document.getElementById('checkoutModal').style.display = 'flex';
     }
     function closeCheckoutModal() {
@@ -3129,7 +3133,8 @@ The Webinar Team</textarea>
         btn.disabled = true;
       }
 
-      const customerName = document.getElementById('payCardName').value || 'Alex Hunter';
+      const customerName = (document.getElementById('payCardName').value || '').trim() || (window.registeredUser ? window.registeredUser.name : 'Verified Attendee');
+      const customerEmail = (window.registeredUser ? window.registeredUser.email : 'attendee@live.com');
       const productTitle = document.getElementById('modalProductTitle').innerText || 'AI Automation Agency Accelerator';
 
       try {
@@ -3139,7 +3144,7 @@ The Webinar Team</textarea>
           body: JSON.stringify({
             webinarId: 'webinar-101',
             customerName,
-            customerEmail: 'alex.hunter@example.com',
+            customerEmail,
             productTitle,
             amount: 197,
             paymentMethod: currentPaymentMethod
@@ -3201,6 +3206,7 @@ The Webinar Team</textarea>
         const data = await res.json();
 
         if (data.success) {
+          window.registeredUser = { name, email, phone };
           document.getElementById('btnAddToGCal').href = data.googleCalendarUrl;
           document.getElementById('btnAddToIcs').href = data.icsCalendarUrl;
           document.getElementById('regUniqueJoinLink').innerText = window.location.origin + data.joinUrl;
