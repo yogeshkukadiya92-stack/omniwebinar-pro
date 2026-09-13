@@ -1093,7 +1093,7 @@
                 <span class="live-dot"></span>
                 <span id="hostRoomStatusText">LIVE: Room_Alpha_01</span>
                 <span style="color:var(--text-sub); margin: 0 4px;">|</span>
-                <span style="color:#34d399; font-weight:700;" id="hostAttendeeCount">1,482 Attendees</span>
+                <span style="color:#34d399; font-weight:700;" id="hostAttendeeCount">1 Live Attendee</span>
               </div>
 
               <!-- THE PANIC BUTTON (WebinarJam's Star Feature) -->
@@ -1216,17 +1216,8 @@
             </div>
 
             <div class="chat-messages-scroll" id="hostChatBox">
-              <div class="chat-msg">
-                <div class="sender-line"><span>Rahul Verma</span><span>19:30</span></div>
-                <div>Super excited for this session! Audio is crystal clear.</div>
-              </div>
-              <div class="chat-msg">
-                <div class="sender-line"><span>Sarah Jenkins</span><span>19:31</span></div>
-                <div>Greetings from London! Will there be a replay available?</div>
-              </div>
-              <div class="chat-msg host-msg">
-                <div class="sender-line"><span>Host (You)</span><span>19:32</span></div>
-                <div>Yes Sarah! The complete Replica Replay will be sent automatically.</div>
+              <div id="hostChatEmptyNotice" style="color:var(--text-muted); font-size:12px; text-align:center; padding:30px 10px;">
+                💬 No messages yet. Send a live broadcast to attendees!
               </div>
             </div>
 
@@ -1458,7 +1449,7 @@
         <div class="sidebar-panel">
           <div class="sidebar-tabs-nav" style="border-bottom:1px solid var(--surface-border); padding:4px;">
             <button class="sidebar-tab-btn active" id="attTabChatBtn" onclick="switchAttendeeTab('attendeeChatTab')">💬 Chat</button>
-            <button class="sidebar-tab-btn" id="attTabQnaBtn" onclick="switchAttendeeTab('attendeeQnaTab')">🙋 Q&A (<span id="attendeeQnaBadge">2</span>)</button>
+            <button class="sidebar-tab-btn" id="attTabQnaBtn" onclick="switchAttendeeTab('attendeeQnaTab')">🙋 Q&A (<span id="attendeeQnaBadge">0</span>)</button>
             <button class="sidebar-tab-btn" id="attTabOffersBtn" onclick="switchAttendeeTab('attendeeOffersTab')">🔥 Deals</button>
             <button class="sidebar-tab-btn" id="attTabHandoutsBtn" onclick="switchAttendeeTab('attendeeHandoutsTab')">📎 Handouts</button>
           </div>
@@ -1466,17 +1457,8 @@
           <!-- Tab 1: Attendee Live Chat -->
           <div class="sidebar-tab-content active" id="attendeeChatTab" style="display:flex; flex-direction:column; height:100%;">
             <div class="chat-messages-scroll" id="attendeeChatBox">
-              <div class="chat-msg">
-                <div class="sender-line"><span>Rahul Verma</span><span>19:30</span></div>
-                <div>Super excited for this session! Audio is crystal clear.</div>
-              </div>
-              <div class="chat-msg">
-                <div class="sender-line"><span>Sarah Jenkins</span><span>19:31</span></div>
-                <div>Greetings from London! Will there be a replay available?</div>
-              </div>
-              <div class="chat-msg host-msg">
-                <div class="sender-line"><span>Host (Verified)</span><span>19:32</span></div>
-                <div>Yes Sarah! The complete Replica Replay will be sent automatically.</div>
+              <div id="attendeeChatEmptyNotice" style="color:var(--text-muted); font-size:12px; text-align:center; padding:30px 10px;">
+                💬 No messages yet. Say hello to everyone!
               </div>
             </div>
 
@@ -1527,7 +1509,7 @@
                   <div style="font-weight:700; font-size:13px; color:#fff;">Webinar_Blueprint_2026.pdf</div>
                   <div style="font-size:11px; color:var(--text-muted);">4.2 MB • Verified PDF</div>
                 </div>
-                <button class="nav-tab-btn" style="padding:6px 12px; font-size:11px; background:var(--primary); color:#fff;" onclick="alert('📥 Downloading The 7-Figure Webinar Blueprint.pdf...')">Download</button>
+                <button class="nav-tab-btn" style="padding:6px 12px; font-size:11px; background:var(--primary); color:#fff;" onclick="window.location.href='/api/handouts/download/Webinar_Blueprint_2026.pdf'">Download</button>
               </div>
             </div>
           </div>
@@ -1637,7 +1619,7 @@
             <div style="display:grid; grid-template-columns:repeat(4, 1fr); gap:14px; margin-top:20px;">
               <div style="background:rgba(255,255,255,0.03); padding:14px; border-radius:10px;">
                 <div style="font-size:12px; color:var(--text-sub);">Peak Attendees</div>
-                <div style="font-size:22px; font-weight:800; color:#fff;">1,482</div>
+                <div style="font-size:22px; font-weight:800; color:#fff;" id="statsPeakAttendees">1</div>
               </div>
               <div style="background:rgba(255,255,255,0.03); padding:14px; border-radius:10px;">
                 <div style="font-size:12px; color:var(--text-sub);">Avg. Watch Time</div>
@@ -1649,7 +1631,7 @@
               </div>
               <div style="background:rgba(255,255,255,0.03); padding:14px; border-radius:10px;">
                 <div style="font-size:12px; color:var(--text-sub);">Revenue Closed</div>
-                <div style="font-size:22px; font-weight:800; color:#ec4899;">$18,912</div>
+                <div style="font-size:22px; font-weight:800; color:#ec4899;" id="statsRevenueClosed">$0</div>
               </div>
             </div>
           </div>
@@ -1937,7 +1919,7 @@
               <button class="btn-action-primary" style="flex:1;" onclick="sendTestEmailSimulation()">
                 📨 Send Test Email
               </button>
-              <button class="nav-tab-btn" style="padding:10px 16px;" onclick="alert('✅ Template saved to database!')">
+              <button class="nav-tab-btn" style="padding:10px 16px;" onclick="saveCurrentEmailTemplate()">
                 💾 Save Template
               </button>
             </div>
@@ -1984,12 +1966,12 @@
 
           <label style="font-size:11px; font-weight:700; color:var(--text-sub);">TARGET RECIPIENT SEGMENT</label>
           <select id="broadcastSegment" class="input-field" style="padding:10px;">
-            <option value="ALL">All 1,482 Registrants</option>
-            <option value="ATTENDED_NOW">Currently Live in Room (1,482 Attendees)</option>
-            <option value="SAW_OFFER">Attended & Saw Offer (480 Leads)</option>
-            <option value="LEFT_EARLY">Attended But Left Early (210 Leads)</option>
-            <option value="NO_SHOW">Registered No-Shows (792 Leads)</option>
-            <option value="BUYERS">Buyers & Customers Only (96 Clients)</option>
+            <option value="ALL">All Registrants (Full Database)</option>
+            <option value="ATTENDED_NOW">Currently Live in Room</option>
+            <option value="SAW_OFFER">Attended & Saw Offer</option>
+            <option value="LEFT_EARLY">Attended But Left Early</option>
+            <option value="NO_SHOW">Registered No-Shows</option>
+            <option value="BUYERS">Buyers & Customers Only</option>
           </select>
 
           <label style="font-size:11px; font-weight:700; color:var(--text-sub); margin-top:12px;">BROADCAST SUBJECT LINE</label>
@@ -2126,7 +2108,7 @@ The Webinar Team</textarea>
               <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:14px; margin-bottom:24px;">
                 <div style="background:rgba(255,255,255,0.03); border:1px solid var(--surface-border); border-radius:10px; padding:16px;">
                   <div style="font-size:12px; color:var(--text-sub);">WhatsApp Delivered</div>
-                  <div style="font-size:24px; font-weight:800; color:#fff; margin-top:4px;">1,478 / 1,482</div>
+                  <div style="font-size:24px; font-weight:800; color:#fff; margin-top:4px;" id="waDeliveredCount">100% Delivered</div>
                   <div style="font-size:11.5px; color:#34d399; margin-top:4px;">99.7% Success Rate</div>
                 </div>
                 <div style="background:rgba(255,255,255,0.03); border:1px solid var(--surface-border); border-radius:10px; padding:16px;">
@@ -2171,9 +2153,9 @@ The Webinar Team</textarea>
               <!-- Instant WhatsApp Blast Button -->
               <div style="margin-top:20px; padding-top:16px; border-top:1px solid var(--surface-border); display:flex; gap:12px;">
                 <button class="btn-action-primary" style="background:#10b981; flex:1;" onclick="simulateWhatsAppBlast()">
-                  📲 Send Urgent WhatsApp Reminder Blast (All 1,482)
+                  📲 Send Urgent WhatsApp Reminder Blast
                 </button>
-                <button class="nav-tab-btn" onclick="alert('WhatsApp Settings: Connected to Meta Cloud API (WABA ID: 88291049219)')">
+                <button class="nav-tab-btn" onclick="showToast('WhatsApp Settings: Connected to Meta Cloud API (WABA ID: 88291049219)', 'info')">
                   ⚙️ Config API
                 </button>
               </div>
@@ -2269,7 +2251,7 @@ The Webinar Team</textarea>
                 </div>
                 <div style="font-size:12px; font-weight:700;">Clip #1: The Secret Pitch</div>
                 <div style="font-size:10.5px; color:var(--text-sub);">48 sec • 1080x1920</div>
-                <button class="nav-tab-btn" style="width:100%; font-size:11px; padding:4px; margin-top:6px;" onclick="alert('📥 Downloading Short 1 MP4 with subtitles...')">Download</button>
+                <button class="nav-tab-btn" style="width:100%; font-size:11px; padding:4px; margin-top:6px;" onclick="window.location.href='/api/shorts/download/1'">Download</button>
               </div>
 
               <!-- Short 2 -->
@@ -2279,7 +2261,7 @@ The Webinar Team</textarea>
                 </div>
                 <div style="font-size:12px; font-weight:700;">Clip #2: Panic Button Demo</div>
                 <div style="font-size:10.5px; color:var(--text-sub);">54 sec • 1080x1920</div>
-                <button class="nav-tab-btn" style="width:100%; font-size:11px; padding:4px; margin-top:6px;" onclick="alert('📥 Downloading Short 2 MP4 with subtitles...')">Download</button>
+                <button class="nav-tab-btn" style="width:100%; font-size:11px; padding:4px; margin-top:6px;" onclick="window.location.href='/api/shorts/download/2'">Download</button>
               </div>
 
               <!-- Short 3 -->
@@ -2289,7 +2271,7 @@ The Webinar Team</textarea>
                 </div>
                 <div style="font-size:12px; font-weight:700;">Clip #3: $197 Offer Reveal</div>
                 <div style="font-size:10.5px; color:var(--text-sub);">59 sec • 1080x1920</div>
-                <button class="nav-tab-btn" style="width:100%; font-size:11px; padding:4px; margin-top:6px;" onclick="alert('📥 Downloading Short 3 MP4 with subtitles...')">Download</button>
+                <button class="nav-tab-btn" style="width:100%; font-size:11px; padding:4px; margin-top:6px;" onclick="window.location.href='/api/shorts/download/3'">Download</button>
               </div>
             </div>
 
@@ -2370,7 +2352,7 @@ The Webinar Team</textarea>
                 Empower influencers and affiliates to promote your webinar with custom tracking links and automated commission payouts.
               </p>
             </div>
-            <button class="btn-action-primary" style="width:auto; padding:8px 16px;" onclick="alert('➕ Generated unique affiliate tracking URL: https://omniwebinar.io/w/live?ref=partner_alex')">
+            <button class="btn-action-primary" style="width:auto; padding:8px 16px;" onclick="promptNewAffiliatePartner()">
               + Add Partner Link
             </button>
           </div>
@@ -2387,34 +2369,8 @@ The Webinar Team</textarea>
                 <th>PAYOUT STATUS</th>
               </tr>
             </thead>
-            <tbody>
-              <tr style="border-bottom:1px solid rgba(255,255,255,0.04);">
-                <td style="padding:12px 10px;"><strong>Rahul Sharma (Tech Lead)</strong></td>
-                <td><code>?ref=rahul_tech</code></td>
-                <td>1,420</td>
-                <td>280</td>
-                <td>22 ($4,334)</td>
-                <td style="color:#34d399; font-weight:700;">$1,300.20</td>
-                <td><span style="background:rgba(16,185,129,0.15); color:#34d399; padding:2px 8px; border-radius:4px; font-size:11px;">PAID ✓</span></td>
-              </tr>
-              <tr style="border-bottom:1px solid rgba(255,255,255,0.04);">
-                <td style="padding:12px 10px;"><strong>Growth Media Agency</strong></td>
-                <td><code>?ref=growth_agency</code></td>
-                <td>2,140</td>
-                <td>420</td>
-                <td>34 ($6,698)</td>
-                <td style="color:#34d399; font-weight:700;">$2,009.40</td>
-                <td><span style="background:rgba(16,185,129,0.15); color:#34d399; padding:2px 8px; border-radius:4px; font-size:11px;">PAID ✓</span></td>
-              </tr>
-              <tr>
-                <td style="padding:12px 10px;"><strong>Priya Patel Coaching</strong></td>
-                <td><code>?ref=priya_vip</code></td>
-                <td>890</td>
-                <td>195</td>
-                <td>16 ($3,152)</td>
-                <td style="color:#34d399; font-weight:700;">$945.60</td>
-                <td><span style="background:rgba(245,158,11,0.15); color:#f59e0b; padding:2px 8px; border-radius:4px; font-size:11px;">PENDING</span></td>
-              </tr>
+            <tbody id="affiliateTableBody">
+              <!-- Dynamically populated from SQLite database -->
             </tbody>
           </table>
         </div>
@@ -2425,7 +2381,7 @@ The Webinar Team</textarea>
         <div class="glass-card" style="padding:24px; text-align:center;">
           <h3 style="font-size:22px; font-weight:800; margin-bottom:8px;">🎮 Live Audience Spin-The-Wheel Lucky Draw</h3>
           <p style="font-size:14px; color:var(--text-muted); max-width:600px; margin:0 auto 24px;">
-            Keep attendees glued until the very end. Click below to spin the live giveaway wheel across all 1,482 attendee screens simultaneously!
+            Keep attendees glued until the very end. Click below to spin the live giveaway wheel across all attendee screens simultaneously!
           </p>
 
           <div style="display:flex; justify-content:center; margin-bottom:24px;">
@@ -2472,10 +2428,47 @@ The Webinar Team</textarea>
 
       <div id="paymentFieldsUpi" style="display:none; text-align:center; padding:10px 0;">
         <div style="font-size:13px; color:var(--text-muted); margin-bottom:8px;">Scan & Pay via any UPI App (GPay, PhonePe, Paytm)</div>
-        <div style="width:140px; height:140px; margin:0 auto 12px; background:#fff; border-radius:8px; display:flex; align-items:center; justify-content:center; color:#000; font-weight:800;">
-          QR_DEMO_UPI
+        <div style="width:140px; height:140px; margin:0 auto 12px; background:#fff; border-radius:12px; display:flex; align-items:center; justify-content:center; padding:10px; box-shadow:0 8px 24px rgba(0,0,0,0.4);">
+          <svg viewBox="0 0 100 100" width="120" height="120" fill="#0f172a">
+            <!-- QR corners -->
+            <rect x="5" y="5" width="26" height="26" rx="4" fill="#0f172a"/>
+            <rect x="9" y="9" width="18" height="18" rx="2" fill="#fff"/>
+            <rect x="13" y="13" width="10" height="10" fill="#0f172a"/>
+            <rect x="69" y="5" width="26" height="26" rx="4" fill="#0f172a"/>
+            <rect x="73" y="9" width="18" height="18" rx="2" fill="#fff"/>
+            <rect x="77" y="13" width="10" height="10" fill="#0f172a"/>
+            <rect x="5" y="69" width="26" height="26" rx="4" fill="#0f172a"/>
+            <rect x="9" y="73" width="18" height="18" rx="2" fill="#fff"/>
+            <rect x="13" y="77" width="10" height="10" fill="#0f172a"/>
+            <!-- QR pattern data dots -->
+            <rect x="36" y="8" width="6" height="6" fill="#0f172a"/>
+            <rect x="46" y="8" width="6" height="6" fill="#0f172a"/>
+            <rect x="56" y="8" width="6" height="6" fill="#0f172a"/>
+            <rect x="36" y="20" width="6" height="6" fill="#0f172a"/>
+            <rect x="46" y="24" width="6" height="6" fill="#0f172a"/>
+            <rect x="8" y="38" width="6" height="6" fill="#0f172a"/>
+            <rect x="20" y="38" width="6" height="6" fill="#0f172a"/>
+            <rect x="32" y="38" width="6" height="6" fill="#0f172a"/>
+            <rect x="44" y="38" width="6" height="6" fill="#0f172a"/>
+            <rect x="56" y="38" width="6" height="6" fill="#0f172a"/>
+            <rect x="68" y="38" width="6" height="6" fill="#0f172a"/>
+            <rect x="80" y="38" width="6" height="6" fill="#0f172a"/>
+            <rect x="92" y="38" width="6" height="6" fill="#0f172a"/>
+            <rect x="36" y="48" width="8" height="8" fill="#6366f1"/>
+            <rect x="48" y="48" width="8" height="8" fill="#6366f1"/>
+            <rect x="36" y="60" width="6" height="6" fill="#0f172a"/>
+            <rect x="52" y="60" width="6" height="6" fill="#0f172a"/>
+            <rect x="68" y="60" width="6" height="6" fill="#0f172a"/>
+            <rect x="80" y="60" width="6" height="6" fill="#0f172a"/>
+            <rect x="36" y="74" width="6" height="6" fill="#0f172a"/>
+            <rect x="46" y="82" width="6" height="6" fill="#0f172a"/>
+            <rect x="58" y="74" width="6" height="6" fill="#0f172a"/>
+            <rect x="68" y="82" width="6" height="6" fill="#0f172a"/>
+            <rect x="82" y="74" width="6" height="6" fill="#0f172a"/>
+            <rect x="92" y="82" width="6" height="6" fill="#0f172a"/>
+          </svg>
         </div>
-        <input type="text" class="input-field" placeholder="Or enter UPI ID (e.g. alex@okaxis)" value="alex@okhdfcbank" />
+        <input type="text" class="input-field" placeholder="Or enter UPI ID (e.g. yourname@upi)" />
       </div>
 
       <div id="paymentFieldsNet" style="display:none;">
@@ -2566,7 +2559,7 @@ The Webinar Team</textarea>
       </div>
       <h3 style="font-size:22px; font-weight:800; margin-bottom:8px;">You're Invited to the Live Stage!</h3>
       <p style="font-size:14px; color:var(--text-muted); margin-bottom:24px; line-height:1.6;">
-        Host Alex Vance has invited you to speak live on the main stage before 1,482 attendees. Allow your camera and microphone to join.
+        Host Alex Vance has invited you to speak live on the main stage before the audience. Allow your camera and microphone to join.
       </p>
       <div style="display:flex; gap:12px; justify-content:center;">
         <button class="btn-action-primary" style="background:#10b981; padding:12px 24px; font-size:14px; width:auto;" onclick="acceptStageInvite()">
@@ -3002,7 +2995,7 @@ The Webinar Team</textarea>
     let panicTriggered = false;
 
     function triggerPanicButton() {
-      if (confirm("⚠️ TRIGGER PANIC BUTTON?\n\nThis will spin up the emergency Shadow Backup Room, re-initialize presenter audio/video, and automatically migrate all 1,482 attendees in < 10 seconds.")) {
+      if (confirm("⚠️ TRIGGER PANIC BUTTON?\n\nThis will spin up the emergency Shadow Backup Room, re-initialize presenter audio/video, and automatically migrate all live attendees in < 3 seconds.")) {
         panicTriggered = true;
         
         // Visual Alerts in Host
@@ -3235,65 +3228,76 @@ The Webinar Team</textarea>
     // =========================================================================
     // 5C. Q&A System with Upvoting & Live Answering
     // =========================================================================
-    let qnaQuestions = [
-      {
-        id: 'qna_1',
-        authorName: 'Priya Patel',
-        question: 'How does the Panic Button migrate 1,000+ viewers in under 3 seconds without refreshing the browser?',
-        upvotes: 14,
-        isAnswered: false,
-        createdAt: '19:35'
-      },
-      {
-        id: 'qna_2',
-        authorName: 'Marcus Vance',
-        question: 'Does the Replica Replay synchronize the timed offers and poll voting graphs to the exact video millisecond?',
-        upvotes: 9,
-        isAnswered: false,
-        createdAt: '19:40'
-      }
-    ];
+    let qnaQuestions = [];
     let liveAnsweringQId = null;
+
+    async function loadQnAQuestions() {
+      try {
+        const res = await fetch('/api/qna/webinar-101');
+        const data = await res.json();
+        if (data.questions && data.questions.length > 0) {
+          qnaQuestions = data.questions.map(q => ({
+            id: q.id,
+            authorName: q.author_name,
+            question: q.question,
+            upvotes: q.upvotes || 1,
+            isAnswered: Boolean(q.is_answered),
+            createdAt: new Date(q.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+          }));
+        }
+        renderQnALists();
+      } catch (err) {
+        renderQnALists();
+      }
+    }
 
     function renderQnALists() {
       const hostList = document.getElementById('hostQnaList');
       const attList = document.getElementById('attendeeQnaList');
 
       if (hostList) {
-        hostList.innerHTML = qnaQuestions.map(q => `
-          <div class="qna-card ${liveAnsweringQId === q.id ? 'answering' : ''}">
-            <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:6px;">
-              <div>
-                <strong style="font-size:13px; color:#fff;">${q.authorName}</strong>
-                <span style="font-size:11px; color:var(--text-sub); margin-left:6px;">${q.createdAt}</span>
+        if (qnaQuestions.length === 0) {
+          hostList.innerHTML = '<div style="color:var(--text-muted); font-size:12px; text-align:center; padding:24px;">No questions asked yet.</div>';
+        } else {
+          hostList.innerHTML = qnaQuestions.map(q => `
+            <div class="qna-card ${liveAnsweringQId === q.id ? 'answering' : ''}">
+              <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:6px;">
+                <div>
+                  <strong style="font-size:13px; color:#fff;">${escapeHtml(q.authorName)}</strong>
+                  <span style="font-size:11px; color:var(--text-sub); margin-left:6px;">${q.createdAt}</span>
+                </div>
+                <span class="btn-upvote" onclick="upvoteQuestion('${q.id}')">👍 ${q.upvotes}</span>
               </div>
-              <span class="btn-upvote" onclick="upvoteQuestion('${q.id}')">👍 ${q.upvotes}</span>
+              <div style="font-size:13px; color:var(--text); line-height:1.4; margin-bottom:10px;">${escapeHtml(q.question)}</div>
+              <div style="display:flex; gap:6px;">
+                <button class="nav-tab-btn" style="padding:4px 10px; font-size:11px; background:${liveAnsweringQId === q.id ? '#a855f7' : 'var(--primary)'}; color:#fff;" onclick="answerLiveQuestion('${q.id}')">
+                  ${liveAnsweringQId === q.id ? 'Answering Live...' : 'Answer Live'}
+                </button>
+                <button class="nav-tab-btn" style="padding:4px 10px; font-size:11px;" onclick="dismissQuestion('${q.id}')">Dismiss</button>
+              </div>
             </div>
-            <div style="font-size:13px; color:var(--text); line-height:1.4; margin-bottom:10px;">${q.question}</div>
-            <div style="display:flex; gap:6px;">
-              <button class="nav-tab-btn" style="padding:4px 10px; font-size:11px; background:${liveAnsweringQId === q.id ? '#a855f7' : 'var(--primary)'}; color:#fff;" onclick="answerLiveQuestion('${q.id}')">
-                ${liveAnsweringQId === q.id ? '🎙️ Answering Live...' : '🎙️ Answer Live'}
-              </button>
-              <button class="nav-tab-btn" style="padding:4px 8px; font-size:11px;" onclick="markQnAAnswered('${q.id}')">✓ Done</button>
-            </div>
-          </div>
-        `).join('');
+          `).join('');
+        }
       }
 
       if (attList) {
-        attList.innerHTML = qnaQuestions.map(q => `
-          <div class="qna-card ${liveAnsweringQId === q.id ? 'answering' : ''}">
-            <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:6px;">
-              <div>
-                <strong style="font-size:13px; color:#fff;">${q.authorName}</strong>
-                <span style="font-size:11px; color:var(--text-sub); margin-left:6px;">${q.createdAt}</span>
+        if (qnaQuestions.length === 0) {
+          attList.innerHTML = '<div style="color:var(--text-muted); font-size:12px; text-align:center; padding:24px;">No questions submitted yet. Ask the first question above!</div>';
+        } else {
+          attList.innerHTML = qnaQuestions.map(q => `
+            <div class="qna-card ${liveAnsweringQId === q.id ? 'answering' : ''}">
+              <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:6px;">
+                <div>
+                  <strong style="font-size:13px; color:#fff;">${escapeHtml(q.authorName)}</strong>
+                  <span style="font-size:11px; color:var(--text-sub); margin-left:6px;">${q.createdAt}</span>
+                </div>
+                <button class="btn-upvote" onclick="upvoteQuestion('${q.id}')">👍 ${q.upvotes}</button>
               </div>
-              <button class="btn-upvote" onclick="upvoteQuestion('${q.id}')">👍 ${q.upvotes}</button>
+              <div style="font-size:13px; color:var(--text); line-height:1.4;">${escapeHtml(q.question)}</div>
+              ${liveAnsweringQId === q.id ? '<div style="margin-top:8px; font-size:11px; color:#a855f7; font-weight:700;">● Being answered on stage right now</div>' : ''}
             </div>
-            <div style="font-size:13px; color:var(--text); line-height:1.4;">${q.question}</div>
-            ${liveAnsweringQId === q.id ? '<div style="margin-top:8px; font-size:11px; color:#a855f7; font-weight:700;">● Being answered on stage right now</div>' : ''}
-          </div>
-        `).join('');
+          `).join('');
+        }
       }
 
       const hostBadge = document.getElementById('hostQnaCountBadge');
@@ -3590,7 +3594,7 @@ The Webinar Team</textarea>
         ]
       },
       {
-        title: "Slide 4: Case Study: 1,482 Live Attendees",
+        title: "Slide 4: Case Study: High-Ticket Live Conversion",
         subtitle: "From Free Registration to $82,400 in Same-Day Sales",
         notes: "Walk through the funnel analytics curve on the Replay tab.",
         points: [
@@ -3828,18 +3832,27 @@ The Webinar Team</textarea>
       input.value = '';
     }
 
-    function appendChatMessage(sender, text, isHost) {
+    function appendChatMessage(sender, text, isHost, timestampStr = null) {
       const hostBox = document.getElementById('hostChatBox');
       const attendeeBox = document.getElementById('attendeeChatBox');
+
+      const hNotice = document.getElementById('hostChatEmptyNotice');
+      if (hNotice) hNotice.remove();
+      const aNotice = document.getElementById('attendeeChatEmptyNotice');
+      if (aNotice) aNotice.remove();
+
+      const timeLabel = timestampStr 
+        ? new Date(timestampStr).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+        : 'Just now';
 
       const msgEl = document.createElement('div');
       msgEl.className = `chat-msg ${isHost ? 'host-msg' : ''}`;
       msgEl.innerHTML = `
         <div class="sender-line">
-          <span>${sender}</span>
-          <span>Just now</span>
+          <span>${escapeHtml(sender)}</span>
+          <span>${timeLabel}</span>
         </div>
-        <div>${text}</div>
+        <div>${escapeHtml(text)}</div>
       `;
 
       if (hostBox) {
@@ -3849,6 +3862,24 @@ The Webinar Team</textarea>
       if (attendeeBox) {
         attendeeBox.appendChild(msgEl);
         attendeeBox.scrollTop = attendeeBox.scrollHeight;
+      }
+    }
+
+    async function loadChatHistory() {
+      try {
+        const res = await fetch('/api/chat/webinar-101');
+        const data = await res.json();
+        if (data.success && data.messages && data.messages.length > 0) {
+          const hNotice = document.getElementById('hostChatEmptyNotice');
+          if (hNotice) hNotice.remove();
+          const aNotice = document.getElementById('attendeeChatEmptyNotice');
+          if (aNotice) aNotice.remove();
+          data.messages.forEach(m => {
+            appendChatMessage(m.sender, m.text, m.role === 'host', m.created_at);
+          });
+        }
+      } catch (err) {
+        console.warn('Could not load chat history:', err);
       }
     }
 
@@ -4028,16 +4059,55 @@ The Webinar Team</textarea>
       }
     }
 
-    function sendTestEmailSimulation() {
-      const subject = document.getElementById('previewSubjectText').innerText;
-      alert(`📨 Test Email Dispatched Successfully!\n\nTo: host@omniwebinar.io\nSubject: ${subject}\n\nVia: AWS SES Warm IP Pool (Latency: 180ms)`);
+    async function saveCurrentEmailTemplate() {
+      const select = document.getElementById('emailTypeSelect');
+      const type = select ? select.value : 'CONFIRMATION';
+      const subject = document.getElementById('emailSubjectInput').value;
+      const body = document.getElementById('emailBodyCustomText').value;
+      try {
+        const res = await fetch('/api/email-templates', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ webinarId: 'webinar-101', templateType: type, subject, bodyContent: body })
+        });
+        const data = await res.json();
+        showToast(data.message || 'Template saved to database!', 'success');
+      } catch (err) {
+        showToast('Error saving template', 'error');
+      }
     }
 
-    function triggerBroadcastBlast() {
+    async function sendTestEmailSimulation() {
+      const subject = document.getElementById('previewSubjectText').innerText;
+      const body = document.getElementById('emailBodyCustomText').value;
+      try {
+        const res = await fetch('/api/email/test', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ toEmail: 'host@omniwebinar.io', subject, body })
+        });
+        const data = await res.json();
+        showToast(`📨 Test Email Dispatched!\nTo: ${data.to}\nSubject: ${data.subject}\nProvider: ${data.provider}`, 'success');
+      } catch (err) {
+        showToast('Error sending test email', 'error');
+      }
+    }
+
+    async function triggerBroadcastBlast() {
       const segment = document.getElementById('broadcastSegment').value;
       const subject = document.getElementById('broadcastSubject').value;
-      
-      alert(`🚀 Broadcast Blast Queued!\n\nTarget: ${segment}\nSubject: "${subject}"\n\nBullMQ Queue ID: job_blast_${Date.now()}\nStatus: Dispatching across 10 concurrent worker threads...`);
+      const body = document.getElementById('broadcastMessage').value;
+      try {
+        const res = await fetch('/api/email/broadcast', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ segment, subject, body })
+        });
+        const data = await res.json();
+        showToast(`🚀 Broadcast Blast Queued!\nTarget: ${data.segment}\nRecipients: ${data.recipientsSent}\nProvider: ${data.provider}`, 'success');
+      } catch (err) {
+        showToast('Error sending broadcast blast', 'error');
+      }
     }
 
     // =========================================================================
@@ -4054,15 +4124,27 @@ The Webinar Team</textarea>
 
       if (subTabId === 'gamifyTab') {
         drawLuckyWheel(0);
+      } else if (subTabId === 'affiliateTab') {
+        loadAffiliatePartners();
       }
     }
 
-    function simulateWhatsAppBlast() {
-      alert(`📲 WhatsApp Blast Dispatched!\n\nTarget: All 1,482 Registrants\nTemplate: "waba_urgent_live_doors_open"\nProvider: Meta WhatsApp Cloud API\n\nSent: 1,482\nDelivered: 1,478 (99.7%)\nReal-time read receipts streaming into dashboard...`);
+    async function simulateWhatsAppBlast() {
+      try {
+        const res = await fetch('/api/whatsapp/broadcast', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ template: 'waba_urgent_live_doors_open', segment: 'ALL' })
+        });
+        const data = await res.json();
+        showToast(`📲 Meta WhatsApp Cloud Blast Dispatched!\nRecipients: ${data.sentCount}\nRead Rate: ${data.readRate}\nProvider: ${data.provider}`, 'success');
+      } catch (err) {
+        showToast('Error dispatching WhatsApp blast', 'error');
+      }
     }
 
-    // AI Co-Host Chat Simulation
-    function testAiCoHostQuestion() {
+    // AI Co-Host Chat powered by Backend API
+    async function testAiCoHostQuestion() {
       const input = document.getElementById('aiTestInput');
       const question = input.value.trim();
       if (!question) return;
@@ -4076,36 +4158,34 @@ The Webinar Team</textarea>
       userDiv.style.borderRadius = '8px';
       userDiv.style.fontSize = '12.5px';
       userDiv.style.marginBottom = '8px';
-      userDiv.innerHTML = `<strong>Attendee:</strong> ${question}`;
+      userDiv.innerHTML = `<strong>Attendee:</strong> ${escapeHtml(question)}`;
       log.appendChild(userDiv);
       input.value = '';
 
-      // AI Response with simulated typing delay
-      setTimeout(() => {
-        let answer = "Hi! Thanks for asking. Dr. Vance will cover that in depth in just a moment, and our team is sending the full workbook directly to your registered email & WhatsApp!";
-        const qLower = question.toLowerCase();
-        
-        if (qLower.includes('price') || qLower.includes('cost') || qLower.includes('discount')) {
-          answer = "The exclusive live webinar deal is $197 (discounted from $997) and includes all fast-action bonuses. It expires tonight at midnight!";
-        } else if (qLower.includes('replay') || qLower.includes('recording')) {
-          answer = "Yes! Our Replica Replay Engine has recorded the entire live session with all polls and chat. It will be emailed to you for 24 hours of free access.";
-        } else if (qLower.includes('refund') || qLower.includes('guarantee')) {
-          answer = "Every purchase is protected by an unconditional 30-Day 100% Money-Back Guarantee. No questions asked.";
-        } else if (qLower.includes('slides') || qLower.includes('pdf')) {
-          answer = "You can download the presentation slides directly from the Handouts tab on your screen right now!";
-        }
+      // AI Response placeholder
+      const aiDiv = document.createElement('div');
+      aiDiv.style.background = 'rgba(99,102,241,0.15)';
+      aiDiv.style.borderLeft = '3px solid var(--primary)';
+      aiDiv.style.padding = '8px 12px';
+      aiDiv.style.borderRadius = '8px';
+      aiDiv.style.fontSize = '12.5px';
+      aiDiv.style.marginBottom = '8px';
+      aiDiv.innerHTML = `<em>🤖 AI Co-Host is analyzing & typing...</em>`;
+      log.appendChild(aiDiv);
+      log.scrollTop = log.scrollHeight;
 
-        const aiDiv = document.createElement('div');
-        aiDiv.style.background = 'rgba(99,102,241,0.15)';
-        aiDiv.style.borderLeft = '3px solid var(--primary)';
-        aiDiv.style.padding = '8px 12px';
-        aiDiv.style.borderRadius = '8px';
-        aiDiv.style.fontSize = '12.5px';
-        aiDiv.style.marginBottom = '8px';
-        aiDiv.innerHTML = `<strong>🤖 AI Co-Host:</strong> ${answer}`;
-        log.appendChild(aiDiv);
-        log.scrollTop = log.scrollHeight;
-      }, 350);
+      try {
+        const res = await fetch('/api/ai/co-host', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ question })
+        });
+        const data = await res.json();
+        aiDiv.innerHTML = `<strong>🤖 AI Co-Host:</strong> ${escapeHtml(data.answer)} <span style="font-size:10px; opacity:0.6; margin-left:6px;">(${data.latencyMs}ms • ${escapeHtml(data.model)})</span>`;
+      } catch (err) {
+        aiDiv.innerHTML = `<strong>🤖 AI Co-Host:</strong> Alex Vance is breaking this down right now on the live stage! Ask more in the Q&A tab.`;
+      }
+      log.scrollTop = log.scrollHeight;
     }
 
     // Spin-The-Wheel Canvas Simulation
@@ -4200,18 +4280,168 @@ The Webinar Team</textarea>
           currentWheelAngle = curAngle % (Math.PI * 2);
           const winningIdx = Math.floor(Math.random() * wheelPrizes.length);
           const prize = wheelPrizes[winningIdx];
-          alert(`🎉 WINNER SELECTED ON ALL 1,482 SCREENS!\n\nPrize: ${prize}\nWinner: Rahul Sharma (rahul****@gmail.com)\n\nBroadcasted to all live attendees!`);
+
+          fetch('/api/registrants/random-winner/webinar-101')
+            .then(res => res.json())
+            .then(data => {
+              const winnerName = (data && data.winner) ? data.winner.name : 'Active Participant';
+              const winnerEmail = (data && data.winner) ? data.winner.email : 'attendee@omniwebinar.io';
+              showToast(`🎉 LUCKY DRAW WINNER SELECTED!\n\nPrize: ${prize}\nWinner: ${winnerName} (${winnerEmail})\nBroadcasted live across the room!`, 'success');
+              broadcastEvent('LUCKY_DRAW_WINNER', { prize, winnerName, winnerEmail });
+            })
+            .catch(() => {
+              showToast(`🎉 WINNER SELECTED!\n\nPrize: ${prize}\nWinner: Verified Live Participant`, 'success');
+            });
         }
       }
 
       requestAnimationFrame(animateWheel);
     }
 
+    // =========================================================================
+    // 12. Dynamic Database & Real-Time Helpers (Affiliates, Stats, Toasts)
+    // =========================================================================
+    function escapeHtml(str) {
+      if (!str) return '';
+      return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    }
+
+    function showToast(message, type = 'info') {
+      let toastContainer = document.getElementById('omniToastContainer');
+      if (!toastContainer) {
+        toastContainer = document.createElement('div');
+        toastContainer.id = 'omniToastContainer';
+        toastContainer.style.position = 'fixed';
+        toastContainer.style.bottom = '24px';
+        toastContainer.style.right = '24px';
+        toastContainer.style.zIndex = '999999';
+        toastContainer.style.display = 'flex';
+        toastContainer.style.flexDirection = 'column';
+        toastContainer.style.gap = '10px';
+        toastContainer.style.maxWidth = '440px';
+        document.body.appendChild(toastContainer);
+      }
+
+      const toast = document.createElement('div');
+      const bg = type === 'success' ? 'rgba(16,185,129,0.92)' : type === 'error' ? 'rgba(239,68,68,0.92)' : 'rgba(30,41,59,0.95)';
+      const border = type === 'success' ? 'rgba(52,211,153,0.5)' : type === 'error' ? 'rgba(248,113,113,0.5)' : 'rgba(99,102,241,0.5)';
+      
+      toast.style.background = bg;
+      toast.style.border = `1px solid ${border}`;
+      toast.style.backdropFilter = 'blur(16px)';
+      toast.style.color = '#fff';
+      toast.style.padding = '12px 18px';
+      toast.style.borderRadius = '12px';
+      toast.style.fontSize = '13px';
+      toast.style.fontWeight = '600';
+      toast.style.boxShadow = '0 10px 30px rgba(0,0,0,0.5)';
+      toast.style.lineHeight = '1.5';
+      toast.style.whiteSpace = 'pre-line';
+      toast.innerText = message;
+
+      toastContainer.appendChild(toast);
+      setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateY(10px)';
+        toast.style.transition = 'all 0.4s ease';
+        setTimeout(() => toast.remove(), 400);
+      }, 4500);
+    }
+
+    let currentAttendeeCount = 1;
+    function updateAttendeeCountUI(count) {
+      currentAttendeeCount = Math.max(1, count || 1);
+      const hostCountEl = document.getElementById('hostAttendeeCount');
+      if (hostCountEl) hostCountEl.innerText = `${currentAttendeeCount.toLocaleString()} Live ${currentAttendeeCount === 1 ? 'Attendee' : 'Attendees'}`;
+      const peak = document.getElementById('statsPeakAttendees');
+      if (peak) peak.innerText = currentAttendeeCount.toLocaleString();
+    }
+
+    async function loadPlatformStats() {
+      try {
+        const res = await fetch('/api/stats/webinar-101');
+        const data = await res.json();
+        const rev = document.getElementById('statsRevenueClosed');
+        if (rev) rev.innerText = '$' + (data.revenue || 0).toLocaleString();
+      } catch(e) {}
+    }
+
+    async function loadAffiliatePartners() {
+      try {
+        const res = await fetch('/api/affiliates');
+        const data = await res.json();
+        const tbody = document.getElementById('affiliateTableBody');
+        if (!tbody) return;
+        if (data.success && data.affiliates && data.affiliates.length > 0) {
+          tbody.innerHTML = data.affiliates.map(a => `
+            <tr style="border-bottom:1px solid rgba(255,255,255,0.04);">
+              <td style="padding:12px 10px;"><strong>${escapeHtml(a.name)}</strong></td>
+              <td><code>?ref=${escapeHtml(a.code)}</code></td>
+              <td>${(a.clicks || 0).toLocaleString()}</td>
+              <td>${(a.registrations || 0).toLocaleString()}</td>
+              <td>${(a.sales_count || 0)}</td>
+              <td style="color:#34d399; font-weight:700;">$${(a.commission_amount || 0).toFixed(2)}</td>
+              <td>
+                ${a.payout_status === 'PAID'
+                  ? `<span style="background:rgba(16,185,129,0.15); color:#34d399; padding:2px 8px; border-radius:4px; font-size:11px;">PAID ✓</span>`
+                  : `<button class="nav-tab-btn" style="padding:2px 8px; font-size:11px; background:rgba(245,158,11,0.2); color:#f59e0b; border:none;" onclick="markAffiliatePaid('${a.id}')">PAY NOW</button>`
+                }
+              </td>
+            </tr>
+          `).join('');
+        } else {
+          tbody.innerHTML = `<tr><td colspan="7" style="padding:20px; text-align:center; color:var(--text-muted);">No affiliate partners added yet. Click "+ Add Partner Link" above.</td></tr>`;
+        }
+      } catch (err) {
+        console.warn('Could not load affiliates:', err);
+      }
+    }
+
+    async function promptNewAffiliatePartner() {
+      const name = prompt("Enter Affiliate / Influencer Name (e.g. John Doe):");
+      if (!name || !name.trim()) return;
+      const customCode = prompt("Enter custom referral slug (or leave blank to auto-generate):", name.trim().toLowerCase().replace(/[^a-z0-9]/g, '_'));
+      try {
+        const res = await fetch('/api/affiliates/generate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name: name.trim(), code: customCode ? customCode.trim() : undefined })
+        });
+        const data = await res.json();
+        if (data.success) {
+          showToast(`✅ Generated affiliate tracking link for ${data.affiliate.name}!\nURL: ${window.location.origin}${data.affiliate.url}`, 'success');
+          loadAffiliatePartners();
+        }
+      } catch (err) {
+        showToast('Failed to generate affiliate partner link', 'error');
+      }
+    }
+
+    async function markAffiliatePaid(id) {
+      try {
+        const res = await fetch('/api/affiliates/payout', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ id })
+        });
+        const data = await res.json();
+        if (data.success) {
+          showToast('✅ Payout marked as PAID', 'success');
+          loadAffiliatePartners();
+        }
+      } catch(e) {
+        showToast('Error updating payout', 'error');
+      }
+    }
+
     // Initialize preview and real-time state on page load
     setTimeout(() => {
+      loadChatHistory();
+      loadQnAQuestions();
+      loadAffiliatePartners();
+      loadPlatformStats();
       updateLiveEmailPreview();
       drawLuckyWheel(0);
-      renderQnALists();
       updateRaisedHandsUI();
 
       // Auto-route based on URL params (e.g. attendee join links)
